@@ -14,12 +14,19 @@ VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
-DEFAULT_CONFIG_URL          = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
-DEFAULT_WEIGHTS_URL         = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
-OLD_DEFAULT_CONFIG_URL      = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg'
-OLD_DEFAULT_WEIGHTS_URL     = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.weights'
-DEFAULT_CONFIG_TEMPLATE_URL = 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg'
-DEFAULT_PRETRAINED_URL      = 'https://lev.cs.rpi.edu/public/models/detect.yolo.pretrained.weights'
+CONFIG_URL_DICT = {
+    'template' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
+
+    'original' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'old'      : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+
+    'v1'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'v2'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+    # 'v3'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+
+    'default'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+    None       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+}
 
 
 #============================
@@ -60,7 +67,7 @@ METHODS = {}
 
 METHODS['init'] = ([
     C_CHAR,          # config_filepath
-    C_CHAR,          # weight_filepath
+    C_CHAR,          # weights_filepath
     C_INT,           # verbose
     C_INT,           # quiet
 ], C_OBJ)
@@ -72,9 +79,9 @@ METHODS['unload'] = ([
 METHODS['train'] = ([
     C_OBJ,           # network
     C_CHAR,          # train_image_manifest
-    C_CHAR,          # weight_path
+    C_CHAR,          # weights_path
     C_INT,           # num_input
-    C_CHAR,          # final_weight_filepath
+    C_CHAR,          # final_weights_filepath
     C_INT,           # verbose
     C_INT,           # quiet
 ], None)
@@ -91,27 +98,6 @@ METHODS['detect'] = ([
 ], None)
 
 DEFAULT_CLASS = 'UNKNOWN'
-DEFAULT_CLASS_LIST = [
-    'lion',
-    'zebra_plains',
-    'hippopotamus',
-    'antelope',
-    'elephant_savanna',
-    'giraffe_reticulated',
-    'zebra_grevys',
-    'giraffe_masai',
-    'unspecified_animal',
-    'car',
-    'bird',
-    'building',
-]
-OLD_DEFAULT_CLASS_LIST = [
-    'elephant_savanna',
-    'giraffe_reticulated',
-    'giraffe_masai',
-    'zebra_grevys',
-    'zebra_plains',
-]
 SIDES = 7
 BOXES = 2
 GRID = 1
@@ -120,7 +106,13 @@ BBOX_RESULT_LENGTH = None
 RESULT_LENGTH = None
 
 
-def _update_globals(grid=GRID, class_list=DEFAULT_CLASS_LIST, verbose=True):
+def _update_globals(grid=GRID, class_list=None, verbose=True):
+    if class_list is None:
+        config_url = CONFIG_URL_DICT['default']
+        classes_url = _parse_classes_from_cfg(config_url)
+        classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet',
+                                            verbose=verbose)
+        class_list = _parse_class_list(classes_filepath)
     if verbose:
         print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
@@ -128,6 +120,25 @@ def _update_globals(grid=GRID, class_list=DEFAULT_CLASS_LIST, verbose=True):
     BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
     RESULT_LENGTH = PROB_RESULT_LENGTH + BBOX_RESULT_LENGTH
 
+
+def _parse_weights_from_cfg(url):
+    return url.replace('.cfg', '.weights')
+
+
+def _parse_classes_from_cfg(url):
+    return url.replace('.cfg', '.classes')
+
+
+def _parse_class_list(classes_filepath):
+    # Load classes from file into the class list
+    assert exists(classes_filepath)
+    class_list = []
+    with open(classes_filepath) as classes:
+        for line in classes.readlines():
+            line = line.strip()
+            if len(line) > 0:
+                class_list.append(line)
+    return class_list
 
 #=================================
 # Load Dynamic Library
@@ -141,8 +152,8 @@ DARKNET_CLIB = _load_c_shared_library(METHODS)
 #=================================
 class Darknet_YOLO_Detector(object):
 
-    def __init__(dark, config_filepath=None, weight_filepath=None,
-                 class_filepath=None, verbose=VERBOSE_DARK, quiet=QUIET_DARK):
+    def __init__(dark, config_filepath=None, weights_filepath=None,
+                 classes_filepath=None, verbose=VERBOSE_DARK, quiet=QUIET_DARK):
         """
             Create the C object for the PyDarknet YOLO detector.
 
@@ -152,29 +163,39 @@ class Darknet_YOLO_Detector(object):
             Returns:
                 detector (object): the Darknet YOLO Detector object
         """
-        dark.class_list = None
-        if config_filepath in ['default', 'v2', None]:
-            config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
-            dark.class_list = DEFAULT_CLASS_LIST
-        elif config_filepath in ['v1', 'old', 'original']:
-            dark.class_list = OLD_DEFAULT_CLASS_LIST
-            config_filepath = ut.grab_file_url(OLD_DEFAULT_CONFIG_URL, appname='pydarknet')
 
-        if weight_filepath in ['default', 'v2', None]:
-            weight_filepath = ut.grab_file_url(DEFAULT_WEIGHTS_URL, appname='pydarknet')
-        elif weight_filepath in ['v1', 'old', 'original']:
-            weight_filepath = ut.grab_file_url(OLD_DEFAULT_WEIGHTS_URL, appname='pydarknet')
+        # Get correct config if specified with shorthand
+        if config_filepath in CONFIG_URL_DICT:
+            config_url = CONFIG_URL_DICT[config_filepath]
+            config_filepath = ut.grab_file_url(config_url, appname='pydarknet')
 
-        if class_filepath is None:
-            dark.class_list = DEFAULT_CLASS_LIST
-        else:
-            dark.class_list = ut.readfrom(ut.truepath(class_filepath)).split('\n')[:-1]
-            #class_filepath
+        # Get correct weights if specified with shorthand
+        if weights_filepath in CONFIG_URL_DICT:
+            config_url = CONFIG_URL_DICT[weights_filepath]
+            weights_url = _parse_weights_from_cfg(config_url)
+            weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet')
 
+        # Get correct classes if specified with shorthand
+        if classes_filepath in CONFIG_URL_DICT:
+            config_url = CONFIG_URL_DICT[classes_filepath]
+            classes_url = _parse_classes_from_cfg(config_url)
+            classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet')
+
+        assert exists(config_filepath)
+        config_filepath = ut.truepath(config_filepath)
+        assert exists(weights_filepath)
+        weights_filepath = ut.truepath(weights_filepath)
+        assert exists(classes_filepath)
+        classes_filepath = ut.truepath(classes_filepath)
+
+        dark.class_list = _parse_class_list(classes_filepath)
+
+        # Save settings
         dark.verbose = verbose
         dark.quiet = quiet
 
-        dark._load(config_filepath, weight_filepath)
+        # Load the network
+        dark._load(config_filepath, weights_filepath)
 
         if dark.verbose and not dark.quiet:
             print('[pydarknet py] New Darknet_YOLO Object Created')
@@ -183,11 +204,11 @@ class Darknet_YOLO_Detector(object):
         dark._unload()
         # super(Darknet_YOLO_Detector, dark).__del__()
 
-    def _load(dark, config_filepath, weight_filepath):
+    def _load(dark, config_filepath, weights_filepath):
         begin = time.time()
         params_list = [
             config_filepath,
-            weight_filepath,
+            weights_filepath,
             dark.verbose,
             dark.quiet,
         ]
@@ -203,7 +224,7 @@ class Darknet_YOLO_Detector(object):
         DARKNET_CLIB.unload(*params_list)
         dark.net = None
 
-    def _train_setup(dark, voc_path, weight_path):
+    def _train_setup(dark, voc_path, weights_path, dataset_list=['train', 'val']):
 
         class_list = []
         annotations_path = join(voc_path, 'Annotations')
@@ -260,8 +281,7 @@ class Darknet_YOLO_Detector(object):
         print('[pydarknet py train] Processing manifest...')
         manifest_filename = join(voc_path, 'manifest.txt')
         with open(manifest_filename, 'w') as manifest:
-            # for dataset_name in ['train', 'val', 'test']:
-            for dataset_name in ['train', 'val']:
+            for dataset_name in dataset_list:
                 dataset_filename = join(imagesets_path, 'Main', '%s.txt' % dataset_name)
                 with open(dataset_filename, 'r') as dataset:
                     image_id_list = dataset.read().strip().split()
@@ -276,12 +296,13 @@ class Darknet_YOLO_Detector(object):
 
         print('[pydarknet py train] Processing config and pretrained weights...')
         # Load default config and pretrained weights
-        config_filepath = ut.grab_file_url(DEFAULT_CONFIG_TEMPLATE_URL, appname='pydarknet')
+        config_url = CONFIG_URL_DICT['template']
+        config_filepath = ut.grab_file_url(config_url, appname='pydarknet')
         with open(config_filepath, 'r') as config:
             config_template_str = config.read()
 
         config_filename = basename(config_filepath).replace('.template.', '.%d.' % (len(class_list), ))
-        config_filepath = join(weight_path, config_filename)
+        config_filepath = join(weights_path, config_filename)
         with open(config_filepath, 'w') as config:
             replace_list = [
                 ('_^_OUTPUT_^_',  SIDES * SIDES * (BOXES * 5 + len(class_list))),
@@ -293,20 +314,22 @@ class Darknet_YOLO_Detector(object):
                 config_template_str = config_template_str.replace(needle, str(replacement))
             config.write(config_template_str)
 
-        class_filepath = '%s.classes' % (config_filepath, )
-        with open(class_filepath, 'w') as class_file:
+        classes_filepath = '%s.classes' % (config_filepath, )
+        with open(classes_filepath, 'w') as class_file:
             for class_ in class_list:
                 class_file.write('%s\n' % (class_, ))
 
-        weight_filepath = ut.grab_file_url(DEFAULT_PRETRAINED_URL, appname='pydarknet')
-        dark._load(config_filepath, weight_filepath)
+        config_url = CONFIG_URL_DICT['template']
+        weights_url = _parse_weights_from_cfg(config_url)
+        weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet')
+        dark._load(config_filepath, weights_filepath)
 
         print('class_list = %r' % (class_list, ))
         print('num_images = %r' % (num_images, ))
 
-        return manifest_filename, num_images, config_filepath, class_filepath
+        return manifest_filename, num_images, config_filepath, classes_filepath
 
-    def train(dark, voc_path, weight_path, **kwargs):
+    def train(dark, voc_path, weights_path, **kwargs):
         """
         Train a new forest with the given positive chips and negative chips.
 
@@ -338,7 +361,7 @@ class Darknet_YOLO_Detector(object):
         """
         # Default values
         params = odict([
-            ('weight_filepath', None),  # This value always gets overwritten
+            ('weights_filepath', None),  # This value always gets overwritten
             ('verbose',         dark.verbose),
             ('quiet',           dark.quiet),
         ])
@@ -346,28 +369,28 @@ class Darknet_YOLO_Detector(object):
         ut.update_existing(params, kwargs)
 
         # Make the tree path absolute
-        weight_path = abspath(weight_path)
-        ut.ensuredir(weight_path)
+        weights_path = abspath(weights_path)
+        ut.ensuredir(weights_path)
 
         # Setup training files and folder structures
-        results = dark._train_setup(voc_path, weight_path)
-        manifest_filename, num_images, config_filepath, class_filepath = results
+        results = dark._train_setup(voc_path, weights_path)
+        manifest_filename, num_images, config_filepath, classes_filepath = results
 
         # Run training algorithm
         params_list = [
             dark.net,
             manifest_filename,
-            weight_path,
+            weights_path,
             num_images,
         ] + list(params.values())
         DARKNET_CLIB.train(*params_list)
-        weight_filepath = params['weight_filepath']
+        weights_filepath = params['weights_filepath']
 
         if not params['quiet']:
             print('\n\n[pydarknet py] *************************************')
             print('[pydarknet py] Training Completed')
-            print('[pydarknet py] Weight file saved to: %s' % (weight_filepath, ))
-        return weight_filepath, config_filepath, class_filepath
+            print('[pydarknet py] Weight file saved to: %s' % (weights_filepath, ))
+        return weights_filepath, config_filepath, classes_filepath
 
     def detect(dark, input_gpath_list, **kwargs):
         """
@@ -377,7 +400,7 @@ class Darknet_YOLO_Detector(object):
             input_gpath_list (list of str): the list of image paths that you want
                 to test
             config_filepath (str, optional): the network definition for YOLO to use
-            weight_filepath (str, optional): the network weights for YOLO to use
+            weights_filepath (str, optional): the network weights for YOLO to use
 
         Kwargs:
             sensitivity (float, optional): the sensitivity of the detector, which
@@ -408,10 +431,10 @@ class Darknet_YOLO_Detector(object):
             >>> # DISABLE_DOCTEST
             >>> from pydarknet._pydarknet import *  # NOQA
             >>> dpath = '/media/raid/work/WS_ALL/localizer_backup/'
-            >>> weight_filepath = join(dpath, 'detect.yolo.2.39000.weights')
+            >>> weights_filepath = join(dpath, 'detect.yolo.2.39000.weights')
             >>> config_filepath = join(dpath, 'detect.yolo.2.cfg')
             >>> dark = Darknet_YOLO_Detector(config_filepath=config_filepath,
-            >>>                              weight_filepath=weight_filepath)
+            >>>                              weights_filepath=weights_filepath)
             >>> input_gpath_list = [u'/media/raid/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg']
             >>> kwargs = {}
             >>> (input_gpath, result_list_) = dark.detect(input_gpath_list)
@@ -568,7 +591,7 @@ def test_pydarknet():
 
 
 def test_pydarknet2(input_gpath_list=None, config_filepath=None,
-                    weight_filepath=None, class_filepath=None):
+                    weights_filepath=None, classes_filepath=None):
     r"""
     CommandLine:
         python -m pydarknet._pydarknet test_pydarknet2 --show
@@ -576,8 +599,8 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
         python -m pydarknet test_pydarknet2 --show \
             --input_gpath_list=["~/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg"] \
             --config_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg" \
-            --weight_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.39000.weights" \
-            --class_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg.classes"
+            --weights_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.39000.weights" \
+            --classes_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg.classes"
 
     Ignore:
         >>> # Load in the second command line strings for faster testing
@@ -605,10 +628,10 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
     if config_filepath is None:
         test_config_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
         config_filepath = ut.grab_file_url(test_config_url)
-    if weight_filepath is None:
-        test_weight_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
-        weight_filepath = ut.grab_file_url(test_weight_url)
-    if class_filepath is None:
+    if weights_filepath is None:
+        test_weights_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
+        weights_filepath = ut.grab_file_url(test_weights_url)
+    if classes_filepath is None:
         pass
 
     if input_gpath_list is None:
@@ -618,12 +641,12 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
 
     input_gpath_list = [ut.truepath(gpath) for gpath in input_gpath_list]
     config_filepath = ut.truepath(config_filepath)
-    weight_filepath = ut.truepath(weight_filepath)
-    class_filepath = ut.truepath(class_filepath)
+    weights_filepath = ut.truepath(weights_filepath)
+    classes_filepath = ut.truepath(classes_filepath)
 
     dark = Darknet_YOLO_Detector(config_filepath=config_filepath,
-                                 weight_filepath=weight_filepath,
-                                 class_filepath=class_filepath)
+                                 weights_filepath=weights_filepath,
+                                 classes_filepath=classes_filepath)
 
     temp_path = ut.ensure_app_resource_dir('pydarknet', 'temp')
     ut.delete(temp_path)

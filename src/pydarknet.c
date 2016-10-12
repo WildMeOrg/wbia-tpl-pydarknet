@@ -9,7 +9,7 @@ typedef unsigned char uint8;
 
 #define PYTHON_DARKNET extern DARKNET_DETECTOR_EXPORT
 
-PYTHON_DARKNET network* init(char *config_filepath, char *weight_filepath, int verbose, int quiet)
+PYTHON_DARKNET network* init(char *config_filepath, char *weights_filepath, int verbose, int quiet)
 {
     if ( quiet == 0)
     {
@@ -34,8 +34,8 @@ PYTHON_DARKNET network* init(char *config_filepath, char *weight_filepath, int v
 
     printf("Done!\n[pydarknet c] ");
     fflush(stdout);
-    if(weight_filepath){
-        load_weights(&net, weight_filepath);
+    if(weights_filepath){
+        load_weights(&net, weights_filepath);
     }
 
     return holder;
@@ -47,10 +47,10 @@ PYTHON_DARKNET void unload(network *net)
     free(net);
 }
 
-PYTHON_DARKNET void train(network *net, char *train_image_manifest, char *weight_path, int num_input, char* weight_filepath, int verbose, int quiet)
+PYTHON_DARKNET void train(network *net, char *train_image_manifest, char *weights_path, int num_input, char* weights_filepath, int verbose, int quiet)
 {
     printf("\n[pydarknet c] Training YOLO network on %d images\n", num_input);
-    train_yolo_custom(net, train_image_manifest, weight_path, weight_filepath, verbose, quiet);
+    train_yolo_custom(net, train_image_manifest, weights_path, weights_filepath, verbose, quiet);
 }
 
 PYTHON_DARKNET void detect(network *net, char **input_gpath_array,
