@@ -166,6 +166,10 @@ class Darknet_YOLO_Detector(object):
                 detector (object): the Darknet YOLO Detector object
         """
 
+        print('[pydarknet py init] config_filepath = %r' % (config_filepath, ))
+        print('[pydarknet py init] weights_filepath = %r' % (weights_filepath, ))
+        print('[pydarknet py init] classes_filepath = %r' % (classes_filepath, ))
+
         # Get correct config if specified with shorthand
         config_url = None
         if config_filepath in CONFIG_URL_DICT:
