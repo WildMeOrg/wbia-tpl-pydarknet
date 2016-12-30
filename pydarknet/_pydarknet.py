@@ -179,18 +179,20 @@ class Darknet_YOLO_Detector(object):
 
         # Get correct weights if specified with shorthand
         if weights_filepath in CONFIG_URL_DICT:
-            config_url_ = CONFIG_URL_DICT[weights_filepath]
-            if config_url_ is None and config_url is not None:
+            if weights_filepath is None and config_url is not None:
                 config_url_ = config_url
+            else:
+                config_url_ = CONFIG_URL_DICT[weights_filepath]
             weights_url = _parse_weights_from_cfg(config_url_)
             weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet',
                                                 check_hash=True)
 
         # Get correct classes if specified with shorthand
         if classes_filepath in CONFIG_URL_DICT:
-            config_url_ = CONFIG_URL_DICT[classes_filepath]
-            if config_url_ is None and config_url is not None:
+            if classes_filepath is None and config_url is not None:
                 config_url_ = config_url
+            else:
+                config_url_ = CONFIG_URL_DICT[classes_filepath]
             classes_url = _parse_classes_from_cfg(config_url_)
             classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet',
                                                 check_hash=True)
