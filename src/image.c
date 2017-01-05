@@ -7,7 +7,7 @@
 #ifdef OPENCV
 #include "opencv2/highgui/highgui_c.h"
 #include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgcodecs/imgcodecs_c.h"
+// #include "opencv2/imgcodecs/imgcodecs_c.h"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
