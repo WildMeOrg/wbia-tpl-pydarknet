@@ -26,8 +26,8 @@ CONFIG_URL_DICT = {
     'lynx'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.lynx.cfg',
     'cheetah'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
 
-    'default'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
-    None       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+    'default'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    None       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
 }
 
 
