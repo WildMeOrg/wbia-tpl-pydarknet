@@ -15,19 +15,27 @@ QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
 CONFIG_URL_DICT = {
-    'template' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
+    'pretrained-v1-pascal'       : 'https://lev.cs.rpi.edu/public/models/pretrained.yolo.v1.pascal.cfg',
+    'pretrained-v2-pascal'       : 'https://lev.cs.rpi.edu/public/models/pretrained.yolo.v2.pascal.cfg',
+    'pretrained-v2-large-pascal' : 'https://lev.cs.rpi.edu/public/models/pretrained.yolo.v2.large.pascal.cfg',
+    'pretrained-tiny-pascal'     : 'https://lev.cs.rpi.edu/public/models/pretrained.yolo.tiny.pascal.cfg',
 
-    'original' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
-    'old'      : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'pretrained-v2-large-coco'   : 'https://lev.cs.rpi.edu/public/models/pretrained.yolo.v2.large.coco.cfg',
+    'pretrained-tiny-coco'       : 'https://lev.cs.rpi.edu/public/models/pretrained.yolo.tiny.coco.cfg',
 
-    'v1'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
-    'v2'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
-    'v3'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
-    'lynx'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.lynx.cfg',
-    'cheetah'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
+    'template'                   : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
 
-    'default'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
-    None       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    'original'                   : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'old'                        : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+
+    'v1'                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'v2'                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+    'v3'                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    'lynx'                       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.lynx.cfg',
+    'cheetah'                    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
+
+    'default'                    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    None                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
 }
 
 
