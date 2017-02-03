@@ -30,3 +30,4 @@ test_times.txt
 failed_doctests.txt
 test_times.txt.backup
 temp/
+timeings.txt

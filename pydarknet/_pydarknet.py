@@ -15,17 +15,19 @@ QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
 CONFIG_URL_DICT = {
-    'template' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
+    'template'                   : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
 
-    'original' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
-    'old'      : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'original'                   : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'old'                        : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
 
-    'v1'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
-    'v2'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
-    # 'v3'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    'v1'                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'v2'                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+    'v3'                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    'lynx'                       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.lynx.cfg',
+    'cheetah'                    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
 
-    'default'  : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
-    None       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
+    'default'                    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    None                         : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
 }
 
 
@@ -111,7 +113,7 @@ def _update_globals(grid=GRID, class_list=None, verbose=True):
         config_url = CONFIG_URL_DICT['default']
         classes_url = _parse_classes_from_cfg(config_url)
         classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet',
-                                            verbose=verbose)
+                                            check_hash=True, verbose=verbose)
         class_list = _parse_class_list(classes_filepath)
     if verbose:
         print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
@@ -163,23 +165,37 @@ class Darknet_YOLO_Detector(object):
             Returns:
                 detector (object): the Darknet YOLO Detector object
         """
+        if verbose:
+            print('[pydarknet py init] config_filepath = %r' % (config_filepath, ))
+            print('[pydarknet py init] weights_filepath = %r' % (weights_filepath, ))
+            print('[pydarknet py init] classes_filepath = %r' % (classes_filepath, ))
 
         # Get correct config if specified with shorthand
+        config_url = None
         if config_filepath in CONFIG_URL_DICT:
             config_url = CONFIG_URL_DICT[config_filepath]
-            config_filepath = ut.grab_file_url(config_url, appname='pydarknet')
+            config_filepath = ut.grab_file_url(config_url, appname='pydarknet',
+                                               check_hash=True)
 
         # Get correct weights if specified with shorthand
         if weights_filepath in CONFIG_URL_DICT:
-            config_url = CONFIG_URL_DICT[weights_filepath]
-            weights_url = _parse_weights_from_cfg(config_url)
-            weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet')
+            if weights_filepath is None and config_url is not None:
+                config_url_ = config_url
+            else:
+                config_url_ = CONFIG_URL_DICT[weights_filepath]
+            weights_url = _parse_weights_from_cfg(config_url_)
+            weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet',
+                                                check_hash=True)
 
         # Get correct classes if specified with shorthand
         if classes_filepath in CONFIG_URL_DICT:
-            config_url = CONFIG_URL_DICT[classes_filepath]
-            classes_url = _parse_classes_from_cfg(config_url)
-            classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet')
+            if classes_filepath is None and config_url is not None:
+                config_url_ = config_url
+            else:
+                config_url_ = CONFIG_URL_DICT[classes_filepath]
+            classes_url = _parse_classes_from_cfg(config_url_)
+            classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet',
+                                                check_hash=True)
 
         assert exists(config_filepath)
         config_filepath = ut.truepath(config_filepath)
@@ -297,7 +313,8 @@ class Darknet_YOLO_Detector(object):
         print('[pydarknet py train] Processing config and pretrained weights...')
         # Load default config and pretrained weights
         config_url = CONFIG_URL_DICT['template']
-        config_filepath = ut.grab_file_url(config_url, appname='pydarknet')
+        config_filepath = ut.grab_file_url(config_url, appname='pydarknet',
+                                           check_hash=True)
         with open(config_filepath, 'r') as config:
             config_template_str = config.read()
 
@@ -321,7 +338,8 @@ class Darknet_YOLO_Detector(object):
 
         config_url = CONFIG_URL_DICT['template']
         weights_url = _parse_weights_from_cfg(config_url)
-        weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet')
+        weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet',
+                                            check_hash=True)
         dark._load(config_filepath, weights_filepath)
 
         print('class_list = %r' % (class_list, ))
@@ -627,10 +645,10 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
 
     if config_filepath is None:
         test_config_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
-        config_filepath = ut.grab_file_url(test_config_url)
+        config_filepath = ut.grab_file_url(test_config_url, check_hash=True)
     if weights_filepath is None:
         test_weights_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
-        weights_filepath = ut.grab_file_url(test_weights_url)
+        weights_filepath = ut.grab_file_url(test_weights_url, check_hash=True)
     if classes_filepath is None:
         pass
 
