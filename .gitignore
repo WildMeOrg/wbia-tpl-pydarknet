@@ -1,4 +1,5 @@
 *.o
+*.pyo
 *.dSYM
 *.csv
 *.out

@@ -207,10 +207,10 @@ class Darknet_YOLO_Detector(object):
     def _load(dark, config_filepath, weights_filepath):
         begin = time.time()
         params_list = [
-            config_filepath,
-            weights_filepath,
-            dark.verbose,
-            dark.quiet,
+            config_filepath.encode('utf-8'),
+            weights_filepath.encode('utf-8'),
+            int(dark.verbose),
+            int(dark.quiet),
         ]
         dark.net = DARKNET_CLIB.init(*params_list)
         conclude = time.time()
