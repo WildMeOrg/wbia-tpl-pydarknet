@@ -20,12 +20,16 @@ else
     export CMAKE_CUDA=On
 fi
 
-export PYEXE=$(which python2.7)
-if [[ "$VIRTUAL_ENV" == ""  ]]; then
+export PYEXE=$(which python)
+if [[ "$VIRTUAL_ENV" == ""  ]] && [[ "$CONDA_PREFIX" == ""  ]] ; then    
     export LOCAL_PREFIX=/usr/local
     export _SUDO="sudo"
 else
-    export LOCAL_PREFIX=$($PYEXE -c "import sys; print(sys.prefix)")/local
+    if [[ "$CONDA_PREFIX" == ""  ]] ; then
+        export LOCAL_PREFIX=$($PYEXE -c "import sys; print(sys.prefix)")/local
+    else
+        export LOCAL_PREFIX=$($PYEXE -c "import sys; print(sys.prefix)")
+    fi
     export _SUDO=""
 fi
 
