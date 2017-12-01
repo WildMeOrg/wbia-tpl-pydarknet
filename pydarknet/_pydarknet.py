@@ -7,6 +7,7 @@ from os.path import abspath, basename, join, exists
 import utool as ut
 import numpy as np
 import time
+import six
 from pydarknet.pydarknet_helpers import (_load_c_shared_library, _cast_list_to_c, ensure_bytes_strings)
 
 
@@ -398,6 +399,10 @@ class Darknet_YOLO_Detector(object):
         # Setup training files and folder structures
         results = dark._train_setup(voc_path, weights_path)
         manifest_filename, num_images, config_filepath, classes_filepath = results
+
+        if six.PY3:
+            manifest_filename = bytes(manifest_filename, encoding='utf-8'),
+            weights_path      = bytes(weights_path,      encoding='utf-8'),
 
         # Run training algorithm
         params_list = [
