@@ -401,8 +401,8 @@ class Darknet_YOLO_Detector(object):
         manifest_filename, num_images, config_filepath, classes_filepath = results
 
         if six.PY3:
-            manifest_filename = bytes(manifest_filename, encoding='utf-8'),
-            weights_path      = bytes(weights_path,      encoding='utf-8'),
+            manifest_filename = bytes(manifest_filename, encoding='utf-8')
+            weights_path      = bytes(weights_path,      encoding='utf-8')
 
         # Run training algorithm
         params_list = [
