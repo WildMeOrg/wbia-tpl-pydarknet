@@ -26,6 +26,7 @@ CONFIG_URL_DICT = {
     'v3'            : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
     'lynx'          : 'https://lev.cs.rpi.edu/public/models/detect.yolo.lynx.cfg',
     'cheetah'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
+    'seaturtle'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.sea_turtle.cfg',
     'sandtiger'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.shark_sandtiger.cfg',
     'whalefluke'    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.cfg',
     'whalefluke_v2' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.v2.cfg',
@@ -161,7 +162,7 @@ DARKNET_CLIB = _load_c_shared_library(METHODS)
 class Darknet_YOLO_Detector(object):
 
     def __init__(dark, config_filepath=None, weights_filepath=None,
-                 classes_filepath=None, verbose=VERBOSE_DARK, quiet=QUIET_DARK):
+                 classes_filepath=None, verbose=True, quiet=QUIET_DARK):
         """
             Create the C object for the PyDarknet YOLO detector.
 
@@ -228,9 +229,14 @@ class Darknet_YOLO_Detector(object):
 
     def _load(dark, config_filepath, weights_filepath):
         begin = time.time()
+
+        if six.PY3:
+            config_filepath  = bytes(config_filepath,  encoding='utf-8')
+            weights_filepath = bytes(weights_filepath, encoding='utf-8')
+
         params_list = [
-            config_filepath.encode('utf-8'),
-            weights_filepath.encode('utf-8'),
+            config_filepath,
+            weights_filepath,
             int(dark.verbose),
             int(dark.quiet),
         ]
