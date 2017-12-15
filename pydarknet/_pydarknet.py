@@ -28,6 +28,7 @@ CONFIG_URL_DICT = {
     'cheetah'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
     'seaturtle'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.sea_turtle.cfg',
     'sandtiger'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.shark_sandtiger.cfg',
+    'hammerhead'    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.shark_hammerhead.cfg',
     'whalefluke'    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.cfg',
     'whalefluke_v2' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.v2.cfg',
 
