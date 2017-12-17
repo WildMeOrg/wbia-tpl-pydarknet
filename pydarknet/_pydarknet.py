@@ -32,6 +32,7 @@ CONFIG_URL_DICT = {
     'whalefluke'    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.cfg',
     'whalefluke_v2' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.v2.cfg',
 
+    'sea'           : 'https://lev.cs.rpi.edu/public/models/detect.yolo.sea.cfg',
     'candidacy'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.candidacy.cfg',
 
     'default'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
