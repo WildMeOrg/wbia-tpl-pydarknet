@@ -14,6 +14,9 @@ from pydarknet.pydarknet_helpers import (_load_c_shared_library, _cast_list_to_c
 VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
+DEVICE = 'cpu' if ut.get_argflag('--cpudark') else 'gpu'
+assert DEVICE in ['cpu', 'gpu']
+
 
 CONFIG_URL_DICT = {
     'template'      : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
@@ -155,7 +158,7 @@ def _parse_class_list(classes_filepath):
 # Load Dynamic Library
 #=================================
 _update_globals(verbose=False)
-DARKNET_CLIB = _load_c_shared_library(METHODS)
+DARKNET_CLIB = _load_c_shared_library(METHODS, device=DEVICE)
 
 
 #=================================

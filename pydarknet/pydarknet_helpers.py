@@ -61,11 +61,17 @@ def _extract_np_array(size_list, ptr_list, arr_t, arr_dtype,
     return arr_list
 
 
-def _load_c_shared_library(METHODS):
+def _load_c_shared_library(METHODS, device='cpu'):
     ''' Loads the pydarknet dynamic library and defines its functions '''
     root_dir = realpath(join('..', dirname(__file__)))
-    libname = 'pydarknet'
-    darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
+    libname = 'pydarknet.%s' % (device, )
+    try:
+        darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
+    except ImportError:
+        print('[pydarknet] CPU fallback for: %s' % (libname, ))
+        device = 'cpu'
+        libname = 'pydarknet.%s' % (device, )
+        darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
     # Load and expose methods from lib
     for method in METHODS.keys():
         def_cfunc(METHODS[method][1], method, METHODS[method][0])

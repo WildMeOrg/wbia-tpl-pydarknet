@@ -44,22 +44,29 @@ file(GLOB CUDA_SOURCE_FILES
 )
 
 if (CUDA)
-    cuda_add_library(pydarknet SHARED
+    cuda_add_library(pydarknet.gpu SHARED
         ${CUDA_SOURCE_FILES}
     	${SOURCE_FILES}
     )
+
+    target_link_libraries(pydarknet.gpu
+        ${OpenCV_LIBS}
+        ${CUDA_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_curand_LIBRARY}
+    )
 else ()
-    add_library(pydarknet SHARED
+    add_library(pydarknet.cpu SHARED
         ${SOURCE_FILES}
     )
-endif ()
 
-#######################################
-target_link_libraries(pydarknet
-    ${OpenCV_LIBS}
-    ${CUDA_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CUDA_CUBLAS_LIBRARIES}
-    ${CUDA_curand_LIBRARY}
-)
+    target_link_libraries(pydarknet.cpu
+        ${OpenCV_LIBS}
+        ${CUDA_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_curand_LIBRARY}
+    )
+endif ()
 
