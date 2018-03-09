@@ -29,7 +29,7 @@ if (CUDA)
     find_package( CUDA REQUIRED )
     add_definitions(-DGPU)
     include_directories(${CUDA_INCLUDE_DIRS})
-    list(APPEND CUDA_NVCC_FLAGS --gpu-architecture=compute_20 --gpu-code=compute_20 --compiler-options ${CFLAGS})
+    list(APPEND CUDA_NVCC_FLAGS --gpu-architecture=compute_50 --gpu-code=compute_50 --compiler-options ${CFLAGS})
 endif()
 
 #######################################
