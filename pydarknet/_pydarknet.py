@@ -19,27 +19,27 @@ assert DEVICE in ['cpu', 'gpu']
 
 
 CONFIG_URL_DICT = {
-    'template'      : 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg',
+    'template'      : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.template.cfg',
 
-    'original'      : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
-    'old'           : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
+    'original'      : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.5.cfg',
+    'old'           : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.5.cfg',
 
-    'v1'            : 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg',
-    'v2'            : 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg',
-    'v3'            : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
-    'lynx'          : 'https://lev.cs.rpi.edu/public/models/detect.yolo.lynx.cfg',
-    'cheetah'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.cheetah.cfg',
-    'seaturtle'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.sea_turtle.cfg',
-    'sandtiger'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.shark_sandtiger.cfg',
-    'hammerhead'    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.shark_hammerhead.cfg',
-    'whalefluke'    : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.cfg',
-    'whalefluke_v2' : 'https://lev.cs.rpi.edu/public/models/detect.yolo.whale_fluke.v2.cfg',
+    'v1'            : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.5.cfg',
+    'v2'            : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.12.cfg',
+    'v3'            : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.29.cfg',
+    'lynx'          : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.lynx.cfg',
+    'cheetah'       : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.cheetah.cfg',
+    'seaturtle'     : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.sea_turtle.cfg',
+    'sandtiger'     : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.shark_sandtiger.cfg',
+    'hammerhead'    : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.shark_hammerhead.cfg',
+    'whalefluke'    : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.whale_fluke.cfg',
+    'whalefluke_v2' : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.whale_fluke.v2.cfg',
 
-    'sea'           : 'https://lev.cs.rpi.edu/public/models/detect.yolo.sea.cfg',
-    'candidacy'     : 'https://lev.cs.rpi.edu/public/models/detect.yolo.candidacy.cfg',
+    'sea'           : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.sea.cfg',
+    'candidacy'     : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.candidacy.cfg',
 
-    'default'       : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
-    None            : 'https://lev.cs.rpi.edu/public/models/detect.yolo.29.cfg',
+    'default'       : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.29.cfg',
+    None            : 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.29.cfg',
 }
 
 
@@ -665,10 +665,10 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
     from os.path import join, basename, dirname
 
     if config_filepath is None:
-        test_config_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
+        test_config_url = 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.12.cfg'
         config_filepath = ut.grab_file_url(test_config_url, check_hash=True)
     if weights_filepath is None:
-        test_weights_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
+        test_weights_url = 'https://cthulhu.dyn.wildme.io/public/models/detect.yolo.12.weights'
         weights_filepath = ut.grab_file_url(test_weights_url, check_hash=True)
     if classes_filepath is None:
         pass
