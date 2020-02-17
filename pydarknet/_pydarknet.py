@@ -19,27 +19,27 @@ assert DEVICE in ['cpu', 'gpu']
 
 
 CONFIG_URL_DICT = {
-    'template'      : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.template.cfg',
+    'template'      : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.template.cfg',
 
-    'original'      : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.5.cfg',
-    'old'           : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.5.cfg',
+    'original'      : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
+    'old'           : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
 
-    'v1'            : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.5.cfg',
-    'v2'            : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.12.cfg',
-    'v3'            : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.29.cfg',
-    'lynx'          : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.lynx.cfg',
-    'cheetah'       : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.cheetah.cfg',
-    'seaturtle'     : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.sea_turtle.cfg',
-    'sandtiger'     : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.shark_sandtiger.cfg',
-    'hammerhead'    : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.shark_hammerhead.cfg',
-    'whalefluke'    : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.whale_fluke.cfg',
-    'whalefluke_v2' : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.whale_fluke.v2.cfg',
+    'v1'            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
+    'v2'            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg',
+    'v3'            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
+    'lynx'          : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.lynx.cfg',
+    'cheetah'       : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.cheetah.cfg',
+    'seaturtle'     : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea_turtle.cfg',
+    'sandtiger'     : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_sandtiger.cfg',
+    'hammerhead'    : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_hammerhead.cfg',
+    'whalefluke'    : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.cfg',
+    'whalefluke_v2' : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.v2.cfg',
 
-    'sea'           : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.sea.cfg',
-    'candidacy'     : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.candidacy.cfg',
+    'sea'           : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea.cfg',
+    'candidacy'     : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.candidacy.cfg',
 
-    'default'       : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.29.cfg',
-    None            : 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.29.cfg',
+    'default'       : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
+    None            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
 }
 
 
@@ -665,10 +665,10 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
     from os.path import join, basename, dirname
 
     if config_filepath is None:
-        test_config_url = 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.12.cfg'
+        test_config_url = 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg'
         config_filepath = ut.grab_file_url(test_config_url, check_hash=True)
     if weights_filepath is None:
-        test_weights_url = 'https://wildbookiarepository.blob.core.windows.net/models/detect.yolo.12.weights'
+        test_weights_url = 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.weights'
         weights_filepath = ut.grab_file_url(test_weights_url, check_hash=True)
     if classes_filepath is None:
         pass
