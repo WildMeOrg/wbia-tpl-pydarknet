@@ -509,7 +509,7 @@ class Darknet_YOLO_Detector(object):
             #     if not params['quiet']:
             #         print('[pydarknet py] Detecting with %d CPUs' % (cpu_count, ))
             #     params['batch_size'] = cpu_count
-            # except:
+            # except Exception:
             #     params['batch_size'] = 128
             params['batch_size'] = 32
 
