@@ -6,7 +6,7 @@ from os.path import join, realpath, dirname
 import numpy as np
 import ctypes as C
 import sys
-import detecttools.ctypes_interface as ctypes_interface
+import ibeis.detecttools.ctypes_interface as ctypes_interface
 
 
 def ensure_bytes_strings(str_list):
