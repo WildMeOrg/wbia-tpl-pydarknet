@@ -605,8 +605,8 @@ def test_pydarknet():
         >>> ut.quit_if_noshow()
         >>> ut.show_if_requested()
     """
-    # import ibeis
-    # from ibeis.other.detectfuncs import export_to_xml
+    # import wbia
+    # from wbia.other.detectfuncs import export_to_xml
     dark = Darknet_YOLO_Detector()
     # TODO: move test images out of the repo. Grab them via utool
     import pydarknet
