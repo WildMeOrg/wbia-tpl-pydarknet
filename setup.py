@@ -44,6 +44,10 @@ setup_kwargs = dict(
     setup_requires=setup_requires,
     install_requires=install_requires,
     # package_data={'build': util_cplat.get_dynamic_lib_globstrs()},
+    cmake_args=[
+        '-DCMAKE_BUILD_TYPE=Release',
+        '-DCUDA=On',
+    ],
 )
 
 
