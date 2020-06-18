@@ -8,7 +8,7 @@ echo 'Removing old build'
 #rm -rf CMakeCache.txt
 #rm -rf cmake_install.cmake
 
-python2.7 -c "import utool as ut; print('keeping build dir' if ut.get_argflag(('--no-rmbuild', '--norm')) else ut.delete('build'))" $@
+python -c "import utool as ut; print('keeping build dir' if ut.get_argflag(('--no-rmbuild', '--norm')) else ut.delete('build'))" $@
 #################################
 echo 'Creating new build'
 mkdir -p build

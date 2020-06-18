@@ -44,7 +44,7 @@ void *fetch_in_thread_coco(void *ptr)
 {
     cv::Mat frame_m;
     cap >> frame_m;
-    IplImage frame = frame_m;
+    IplImage frame = cvIplImage(frame_m);
     in = ipl_to_image(&frame);
     rgbgr_image(in);
     in_s = resize_image(in, net.w, net.h);
