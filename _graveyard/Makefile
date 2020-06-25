@@ -62,4 +62,3 @@ results:
 
 clean:
 	rm -rf $(OBJS) $(EXEC)
-

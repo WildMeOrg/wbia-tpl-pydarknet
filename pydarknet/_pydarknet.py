@@ -8,69 +8,69 @@ import utool as ut
 import numpy as np
 import time
 import six
-from pydarknet.pydarknet_helpers import (_load_c_shared_library, _cast_list_to_c, ensure_bytes_strings)
+from pydarknet.pydarknet_helpers import (
+    _load_c_shared_library,
+    _cast_list_to_c,
+    ensure_bytes_strings,
+)
 
 
 VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
-QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
+QUIET_DARK = ut.get_argflag('--quietdark') or ut.QUIET
 
 DEVICE = 'cpu' if ut.get_argflag('--cpudark') else 'gpu'
 assert DEVICE in ['cpu', 'gpu']
 
 
 CONFIG_URL_DICT = {
-    'template'      : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.template.cfg',
-
-    'original'      : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
-    'old'           : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
-
-    'v1'            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
-    'v2'            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg',
-    'v3'            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
-    'lynx'          : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.lynx.cfg',
-    'cheetah'       : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.cheetah.cfg',
-    'seaturtle'     : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea_turtle.cfg',
-    'sandtiger'     : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_sandtiger.cfg',
-    'hammerhead'    : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_hammerhead.cfg',
-    'whalefluke'    : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.cfg',
-    'whalefluke_v2' : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.v2.cfg',
-
-    'sea'           : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea.cfg',
-    'candidacy'     : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.candidacy.cfg',
-
-    'default'       : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
-    None            : 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
+    'template': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.template.cfg',
+    'original': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
+    'old': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
+    'v1': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',
+    'v2': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg',
+    'v3': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
+    'lynx': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.lynx.cfg',
+    'cheetah': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.cheetah.cfg',
+    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea_turtle.cfg',
+    'sandtiger': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_sandtiger.cfg',
+    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_hammerhead.cfg',
+    'whalefluke': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.cfg',
+    'whalefluke_v2': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.v2.cfg',
+    'sea': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea.cfg',
+    'candidacy': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.candidacy.cfg',
+    'default': 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
+    None: 'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',
 }
 
 
-#============================
+# ============================
 # CTypes Interface Data Types
-#============================
+# ============================
 """
     Bindings for C Variable Types
 """
-NP_FLAGS       = 'aligned, c_contiguous, writeable'
+NP_FLAGS = 'aligned, c_contiguous, writeable'
 # Primatives
-C_OBJ          = C.c_void_p
-C_BYTE         = C.c_char
-C_CHAR         = C.c_char_p
-C_INT          = C.c_int
-C_BOOL         = C.c_bool
-C_FLOAT        = C.c_float
-NP_INT8        = np.uint8
-NP_FLOAT32     = np.float32
+C_OBJ = C.c_void_p
+C_BYTE = C.c_char
+C_CHAR = C.c_char_p
+C_INT = C.c_int
+C_BOOL = C.c_bool
+C_FLOAT = C.c_float
+NP_INT8 = np.uint8
+NP_FLOAT32 = np.float32
 # Arrays
-C_ARRAY_CHAR   = C.POINTER(C_CHAR)
-C_ARRAY_FLOAT  = C.POINTER(C_FLOAT)
-NP_ARRAY_INT   = np.ctypeslib.ndpointer(dtype=C_INT,          ndim=1, flags=NP_FLAGS)
+C_ARRAY_CHAR = C.POINTER(C_CHAR)
+C_ARRAY_FLOAT = C.POINTER(C_FLOAT)
+NP_ARRAY_INT = np.ctypeslib.ndpointer(dtype=C_INT, ndim=1, flags=NP_FLAGS)
 # NP_ARRAY_FLOAT = np.ctypeslib.ndpointer(dtype=NP_FLOAT32,     ndim=2, flags=NP_FLAGS)
-NP_ARRAY_FLOAT = np.ctypeslib.ndpointer(dtype=NP_FLOAT32,     ndim=1, flags=NP_FLAGS)
-RESULTS_ARRAY  = np.ctypeslib.ndpointer(dtype=NP_ARRAY_FLOAT, ndim=1, flags=NP_FLAGS)
+NP_ARRAY_FLOAT = np.ctypeslib.ndpointer(dtype=NP_FLOAT32, ndim=1, flags=NP_FLAGS)
+RESULTS_ARRAY = np.ctypeslib.ndpointer(dtype=NP_ARRAY_FLOAT, ndim=1, flags=NP_FLAGS)
 
 
-#=================================
+# =================================
 # Method Parameter Types
-#=================================
+# =================================
 """
 IMPORTANT:
     For functions that return void, use Python None as the return value.
@@ -79,37 +79,44 @@ IMPORTANT:
 
 METHODS = {}
 
-METHODS['init'] = ([
-    C_CHAR,          # config_filepath
-    C_CHAR,          # weights_filepath
-    C_INT,           # verbose
-    C_INT,           # quiet
-], C_OBJ)
+METHODS['init'] = (
+    [
+        C_CHAR,  # config_filepath
+        C_CHAR,  # weights_filepath
+        C_INT,  # verbose
+        C_INT,  # quiet
+    ],
+    C_OBJ,
+)
 
-METHODS['unload'] = ([
-    C_OBJ,           # network
-], None)
+METHODS['unload'] = ([C_OBJ], None)  # network
 
-METHODS['train'] = ([
-    C_OBJ,           # network
-    C_CHAR,          # train_image_manifest
-    C_CHAR,          # weights_path
-    C_INT,           # num_input
-    C_CHAR,          # final_weights_filepath
-    C_INT,           # verbose
-    C_INT,           # quiet
-], None)
+METHODS['train'] = (
+    [
+        C_OBJ,  # network
+        C_CHAR,  # train_image_manifest
+        C_CHAR,  # weights_path
+        C_INT,  # num_input
+        C_CHAR,  # final_weights_filepath
+        C_INT,  # verbose
+        C_INT,  # quiet
+    ],
+    None,
+)
 
-METHODS['detect'] = ([
-    C_OBJ,           # network
-    C_ARRAY_CHAR,    # input_gpath_array
-    C_INT,           # num_input
-    C_FLOAT,         # sensitivity
-    C_INT,           # grid
-    NP_ARRAY_FLOAT,  # results_array
-    C_INT,           # verbose
-    C_INT,           # quiet
-], None)
+METHODS['detect'] = (
+    [
+        C_OBJ,  # network
+        C_ARRAY_CHAR,  # input_gpath_array
+        C_INT,  # num_input
+        C_FLOAT,  # sensitivity
+        C_INT,  # grid
+        NP_ARRAY_FLOAT,  # results_array
+        C_INT,  # verbose
+        C_INT,  # quiet
+    ],
+    None,
+)
 
 DEFAULT_CLASS = 'UNKNOWN'
 SIDES = 7
@@ -124,11 +131,12 @@ def _update_globals(grid=GRID, class_list=None, verbose=True):
     if class_list is None:
         config_url = CONFIG_URL_DICT['default']
         classes_url = _parse_classes_from_cfg(config_url)
-        classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet',
-                                            check_hash=True, verbose=verbose)
+        classes_filepath = ut.grab_file_url(
+            classes_url, appname='pydarknet', check_hash=True, verbose=verbose
+        )
         class_list = _parse_class_list(classes_filepath)
     if verbose:
-        print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
+        print('UPDATING GLOBALS: %r, %r' % (grid, class_list,))
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
     PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(class_list)
     BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
@@ -154,20 +162,26 @@ def _parse_class_list(classes_filepath):
                 class_list.append(line)
     return class_list
 
-#=================================
+
+# =================================
 # Load Dynamic Library
-#=================================
+# =================================
 _update_globals(verbose=False)
 DARKNET_CLIB = _load_c_shared_library(METHODS, device=DEVICE)
 
 
-#=================================
+# =================================
 # Darknet YOLO Detector
-#=================================
+# =================================
 class Darknet_YOLO_Detector(object):
-
-    def __init__(dark, config_filepath=None, weights_filepath=None,
-                 classes_filepath=None, verbose=True, quiet=QUIET_DARK):
+    def __init__(
+        dark,
+        config_filepath=None,
+        weights_filepath=None,
+        classes_filepath=None,
+        verbose=True,
+        quiet=QUIET_DARK,
+    ):
         """
             Create the C object for the PyDarknet YOLO detector.
 
@@ -178,16 +192,17 @@ class Darknet_YOLO_Detector(object):
                 detector (object): the Darknet YOLO Detector object
         """
         if verbose:
-            print('[pydarknet py init] config_filepath = %r' % (config_filepath, ))
-            print('[pydarknet py init] weights_filepath = %r' % (weights_filepath, ))
-            print('[pydarknet py init] classes_filepath = %r' % (classes_filepath, ))
+            print('[pydarknet py init] config_filepath = %r' % (config_filepath,))
+            print('[pydarknet py init] weights_filepath = %r' % (weights_filepath,))
+            print('[pydarknet py init] classes_filepath = %r' % (classes_filepath,))
 
         # Get correct config if specified with shorthand
         config_url = None
         if config_filepath in CONFIG_URL_DICT:
             config_url = CONFIG_URL_DICT[config_filepath]
-            config_filepath = ut.grab_file_url(config_url, appname='pydarknet',
-                                               check_hash=True)
+            config_filepath = ut.grab_file_url(
+                config_url, appname='pydarknet', check_hash=True
+            )
 
         # Get correct weights if specified with shorthand
         if weights_filepath in CONFIG_URL_DICT:
@@ -196,8 +211,9 @@ class Darknet_YOLO_Detector(object):
             else:
                 config_url_ = CONFIG_URL_DICT[weights_filepath]
             weights_url = _parse_weights_from_cfg(config_url_)
-            weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet',
-                                                check_hash=True)
+            weights_filepath = ut.grab_file_url(
+                weights_url, appname='pydarknet', check_hash=True
+            )
 
         # Get correct classes if specified with shorthand
         if classes_filepath in CONFIG_URL_DICT:
@@ -206,8 +222,9 @@ class Darknet_YOLO_Detector(object):
             else:
                 config_url_ = CONFIG_URL_DICT[classes_filepath]
             classes_url = _parse_classes_from_cfg(config_url_)
-            classes_filepath = ut.grab_file_url(classes_url, appname='pydarknet',
-                                                check_hash=True)
+            classes_filepath = ut.grab_file_url(
+                classes_url, appname='pydarknet', check_hash=True
+            )
 
         assert exists(config_filepath)
         config_filepath = ut.truepath(config_filepath)
@@ -236,7 +253,7 @@ class Darknet_YOLO_Detector(object):
         begin = time.time()
 
         if six.PY3:
-            config_filepath  = bytes(config_filepath,  encoding='utf-8')
+            config_filepath = bytes(config_filepath, encoding='utf-8')
             weights_filepath = bytes(weights_filepath, encoding='utf-8')
 
         params_list = [
@@ -248,7 +265,7 @@ class Darknet_YOLO_Detector(object):
         dark.net = DARKNET_CLIB.init(*params_list)
         conclude = time.time()
         if not dark.quiet:
-            print('[pydarknet py] Took %r seconds to load' % (conclude - begin, ))
+            print('[pydarknet py] Took %r seconds to load' % (conclude - begin,))
 
     def _unload(dark):
         params_list = [
@@ -261,9 +278,9 @@ class Darknet_YOLO_Detector(object):
 
         class_list = []
         annotations_path = join(voc_path, 'Annotations')
-        imagesets_path  = join(voc_path, 'ImageSets')
+        imagesets_path = join(voc_path, 'ImageSets')
         jpegimages_path = join(voc_path, 'JPEGImages')
-        label_path      = join(voc_path, 'labels')
+        label_path = join(voc_path, 'labels')
 
         ut.delete(label_path)
         ut.ensuredir(label_path)
@@ -272,8 +289,8 @@ class Darknet_YOLO_Detector(object):
             import xml.etree.ElementTree as ET
 
             def _convert(size, box):
-                dw = 1. / size[0]
-                dh = 1. / size[1]
+                dw = 1.0 / size[0]
+                dh = 1.0 / size[1]
                 x = (box[0] + box[1]) / 2.0
                 y = (box[2] + box[3]) / 2.0
                 w = box[1] - box[0]
@@ -284,8 +301,8 @@ class Darknet_YOLO_Detector(object):
                 h = h * dh
                 return (x, y, w, h)
 
-            with open(join(label_path, '%s.txt' % (image_id, )), 'w') as out_file:
-                with open(join(annotations_path, '%s.xml' % (image_id, )), 'r') as in_file:
+            with open(join(label_path, '%s.txt' % (image_id,)), 'w') as out_file:
+                with open(join(annotations_path, '%s.xml' % (image_id,)), 'r') as in_file:
                     tree = ET.parse(in_file)
                     root = tree.getroot()
                     size = root.find('size')
@@ -300,14 +317,19 @@ class Darknet_YOLO_Detector(object):
                             class_list.append(class_)
                         class_id = class_list.index(class_)
                         xmlbox = obj.find('bndbox')
-                        b = tuple(map(float, [
-                            xmlbox.find('xmin').text,
-                            xmlbox.find('xmax').text,
-                            xmlbox.find('ymin').text,
-                            xmlbox.find('ymax').text,
-                        ]))
+                        b = tuple(
+                            map(
+                                float,
+                                [
+                                    xmlbox.find('xmin').text,
+                                    xmlbox.find('xmax').text,
+                                    xmlbox.find('ymin').text,
+                                    xmlbox.find('ymax').text,
+                                ],
+                            )
+                        )
                         bb = _convert((w, h), b)
-                        bb_str = ' '.join( [str(_) for _ in bb] )
+                        bb_str = ' '.join([str(_) for _ in bb])
                         out_file.write('%s %s\n' % (class_id, bb_str))
 
         num_images = 0
@@ -320,47 +342,53 @@ class Darknet_YOLO_Detector(object):
                     image_id_list = dataset.read().strip().split()
 
                 for image_id in image_id_list:
-                    print('[pydarknet py train]     processing: %r' % (image_id, ))
+                    print('[pydarknet py train]     processing: %r' % (image_id,))
                     image_filepath = abspath(join(jpegimages_path, '%s.jpg' % image_id))
                     if exists(image_filepath):
-                        manifest.write('%s\n' % (image_filepath, ))
+                        manifest.write('%s\n' % (image_filepath,))
                         _convert_annotation(image_id)
                         num_images += 1
 
         print('[pydarknet py train] Processing config and pretrained weights...')
         # Load default config and pretrained weights
         config_url = CONFIG_URL_DICT['template']
-        config_filepath = ut.grab_file_url(config_url, appname='pydarknet',
-                                           check_hash=True)
+        config_filepath = ut.grab_file_url(
+            config_url, appname='pydarknet', check_hash=True
+        )
         with open(config_filepath, 'r') as config:
             config_template_str = config.read()
 
-        config_filename = basename(config_filepath).replace('.template.', '.%d.' % (len(class_list), ))
+        config_filename = basename(config_filepath).replace(
+            '.template.', '.%d.' % (len(class_list),)
+        )
         config_filepath = join(weights_path, config_filename)
         with open(config_filepath, 'w') as config:
             replace_list = [
-                ('_^_OUTPUT_^_',  SIDES * SIDES * (BOXES * 5 + len(class_list))),
+                ('_^_OUTPUT_^_', SIDES * SIDES * (BOXES * 5 + len(class_list))),
                 ('_^_CLASSES_^_', len(class_list)),
-                ('_^_SIDES_^_',   SIDES),
-                ('_^_BOXES_^_',   BOXES),
+                ('_^_SIDES_^_', SIDES),
+                ('_^_BOXES_^_', BOXES),
             ]
             for needle, replacement in replace_list:
-                config_template_str = config_template_str.replace(needle, str(replacement))
+                config_template_str = config_template_str.replace(
+                    needle, str(replacement)
+                )
             config.write(config_template_str)
 
-        classes_filepath = '%s.classes' % (config_filepath, )
+        classes_filepath = '%s.classes' % (config_filepath,)
         with open(classes_filepath, 'w') as class_file:
             for class_ in class_list:
-                class_file.write('%s\n' % (class_, ))
+                class_file.write('%s\n' % (class_,))
 
         config_url = CONFIG_URL_DICT['template']
         weights_url = _parse_weights_from_cfg(config_url)
-        weights_filepath = ut.grab_file_url(weights_url, appname='pydarknet',
-                                            check_hash=True)
+        weights_filepath = ut.grab_file_url(
+            weights_url, appname='pydarknet', check_hash=True
+        )
         dark._load(config_filepath, weights_filepath)
 
-        print('class_list = %r' % (class_list, ))
-        print('num_images = %r' % (num_images, ))
+        print('class_list = %r' % (class_list,))
+        print('num_images = %r' % (num_images,))
 
         return manifest_filename, num_images, config_filepath, classes_filepath
 
@@ -395,11 +423,13 @@ class Darknet_YOLO_Detector(object):
             None
         """
         # Default values
-        params = odict([
-            ('weights_filepath', None),  # This value always gets overwritten
-            ('verbose',         dark.verbose),
-            ('quiet',           dark.quiet),
-        ])
+        params = odict(
+            [
+                ('weights_filepath', None),  # This value always gets overwritten
+                ('verbose', dark.verbose),
+                ('quiet', dark.quiet),
+            ]
+        )
         # params.update(kwargs)
         ut.update_existing(params, kwargs)
 
@@ -413,22 +443,19 @@ class Darknet_YOLO_Detector(object):
 
         if six.PY3:
             manifest_filename = bytes(manifest_filename, encoding='utf-8')
-            weights_path      = bytes(weights_path,      encoding='utf-8')
+            weights_path = bytes(weights_path, encoding='utf-8')
 
         # Run training algorithm
-        params_list = [
-            dark.net,
-            manifest_filename,
-            weights_path,
-            num_images,
-        ] + list(params.values())
+        params_list = [dark.net, manifest_filename, weights_path, num_images] + list(
+            params.values()
+        )
         DARKNET_CLIB.train(*params_list)
         weights_filepath = params['weights_filepath']
 
         if not params['quiet']:
             print('\n\n[pydarknet py] *************************************')
             print('[pydarknet py] Training Completed')
-            print('[pydarknet py] Weight file saved to: %s' % (weights_filepath, ))
+            print('[pydarknet py] Weight file saved to: %s' % (weights_filepath,))
         return weights_filepath, config_filepath, classes_filepath
 
     def detect(dark, input_gpath_list, **kwargs):
@@ -484,15 +511,17 @@ class Darknet_YOLO_Detector(object):
             >>> ut.show_if_requested()
         """
         # Default values
-        params = odict([
-            ('batch_size',    None),
-            ('class_list',    dark.class_list),
-            ('sensitivity',   0.2),
-            ('grid',          False),
-            ('results_array', None),  # This value always gets overwritten
-            ('verbose',       dark.verbose),
-            ('quiet',         dark.quiet),
-        ])
+        params = odict(
+            [
+                ('batch_size', None),
+                ('class_list', dark.class_list),
+                ('sensitivity', 0.2),
+                ('grid', False),
+                ('results_array', None),  # This value always gets overwritten
+                ('verbose', dark.verbose),
+                ('quiet', dark.quiet),
+            ]
+        )
         # params.update(kwargs)
         ut.update_existing(params, kwargs)
         class_list = params.pop('class_list')
@@ -517,21 +546,24 @@ class Darknet_YOLO_Detector(object):
         params['quiet'] = int(params['quiet'])
 
         # Data integrity
-        assert params['sensitivity'] >= 0 and params['sensitivity'] <= 1.0, (
-            'Threshold must be in the range [0, 1].')
+        assert (
+            params['sensitivity'] >= 0 and params['sensitivity'] <= 1.0
+        ), 'Threshold must be in the range [0, 1].'
 
         # Run training algorithm
         batch_size = params['batch_size']
         del params['batch_size']  # Remove this value from params
         batch_num = int(np.ceil(len(input_gpath_list) / float(batch_size)))
         # Detect for each batch
-        for batch in ut.ProgIter(range(batch_num), lbl='[pydarknet py]', freq=1, invert_rate=True):
+        for batch in ut.ProgIter(
+            range(batch_num), lbl='[pydarknet py]', freq=1, invert_rate=True
+        ):
             begin = time.time()
             start = batch * batch_size
-            end   = start + batch_size
+            end = start + batch_size
             if end > len(input_gpath_list):
                 end = len(input_gpath_list)
-            input_gpath_list_        = input_gpath_list[start:end]
+            input_gpath_list_ = input_gpath_list[start:end]
             num_images = len(input_gpath_list_)
             # Final sanity check
             params['results_array'] = np.empty(num_images * RESULT_LENGTH, dtype=C_FLOAT)
@@ -544,29 +576,39 @@ class Darknet_YOLO_Detector(object):
             DARKNET_CLIB.detect(*params_list)
             results_list = params['results_array']
             conclude = time.time()
-            results_list = results_list.reshape( (num_images, -1) )
+            results_list = results_list.reshape((num_images, -1))
             if not params['quiet']:
-                print('[pydarknet py] Took %r seconds to compute %d images' % (conclude - begin, num_images, ))
+                print(
+                    '[pydarknet py] Took %r seconds to compute %d images'
+                    % (conclude - begin, num_images,)
+                )
             for input_gpath, result_list in zip(input_gpath_list_, results_list):
                 probs_list, bbox_list = np.split(result_list, [PROB_RESULT_LENGTH])
-                assert probs_list.shape[0] == PROB_RESULT_LENGTH and bbox_list.shape[0] == BBOX_RESULT_LENGTH
-                probs_list = probs_list.reshape( (-1, len(class_list)) )
-                bbox_list = bbox_list.reshape( (-1, 4) )
+                assert (
+                    probs_list.shape[0] == PROB_RESULT_LENGTH
+                    and bbox_list.shape[0] == BBOX_RESULT_LENGTH
+                )
+                probs_list = probs_list.reshape((-1, len(class_list)))
+                bbox_list = bbox_list.reshape((-1, 4))
 
                 result_list_ = []
                 for prob_list, bbox in zip(probs_list, bbox_list):
                     class_index = np.argmax(prob_list)
-                    class_label = class_list[class_index] if len(class_list) > class_index else DEFAULT_CLASS
+                    class_label = (
+                        class_list[class_index]
+                        if len(class_list) > class_index
+                        else DEFAULT_CLASS
+                    )
                     class_confidence = prob_list[class_index]
                     if class_confidence < params['sensitivity']:
                         continue
                     result_dict = {
-                        'xtl'        : int(np.around(bbox[0])),
-                        'ytl'        : int(np.around(bbox[1])),
-                        'width'      : int(np.around(bbox[2])),
-                        'height'     : int(np.around(bbox[3])),
-                        'class'      : class_label,
-                        'confidence' : float(class_confidence),
+                        'xtl': int(np.around(bbox[0])),
+                        'ytl': int(np.around(bbox[1])),
+                        'width': int(np.around(bbox[2])),
+                        'height': int(np.around(bbox[3])),
+                        'class': class_label,
+                        'confidence': float(class_confidence),
                     }
                     result_list_.append(result_dict)
 
@@ -611,12 +653,13 @@ def test_pydarknet():
     # TODO: move test images out of the repo. Grab them via utool
     import pydarknet
     from os.path import dirname
+
     pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
     input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
-    #input_gpath_list = [
+    # input_gpath_list = [
     #    abspath(join('_test', 'test_%05d.jpg' % (i, )))
     #    for i in range(1, 76)
-    #]
+    # ]
     input_gpath_list = input_gpath_list[:5]
 
     results_list = dark.detect(input_gpath_list)
@@ -624,13 +667,17 @@ def test_pydarknet():
     for filename, result_list in list(results_list):
         print(filename)
         for result in result_list:
-            print('    Found: %r' % (result, ))
+            print('    Found: %r' % (result,))
 
     del dark
 
 
-def test_pydarknet2(input_gpath_list=None, config_filepath=None,
-                    weights_filepath=None, classes_filepath=None):
+def test_pydarknet2(
+    input_gpath_list=None,
+    config_filepath=None,
+    weights_filepath=None,
+    classes_filepath=None,
+):
     r"""
     CommandLine:
         python -m pydarknet._pydarknet test_pydarknet2 --show
@@ -665,10 +712,14 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
     from os.path import join, basename, dirname
 
     if config_filepath is None:
-        test_config_url = 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg'
+        test_config_url = (
+            'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg'
+        )
         config_filepath = ut.grab_file_url(test_config_url, check_hash=True)
     if weights_filepath is None:
-        test_weights_url = 'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.weights'
+        test_weights_url = (
+            'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.weights'
+        )
         weights_filepath = ut.grab_file_url(test_weights_url, check_hash=True)
     if classes_filepath is None:
         pass
@@ -683,9 +734,11 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
     weights_filepath = ut.truepath(weights_filepath)
     classes_filepath = ut.truepath(classes_filepath)
 
-    dark = Darknet_YOLO_Detector(config_filepath=config_filepath,
-                                 weights_filepath=weights_filepath,
-                                 classes_filepath=classes_filepath)
+    dark = Darknet_YOLO_Detector(
+        config_filepath=config_filepath,
+        weights_filepath=weights_filepath,
+        classes_filepath=classes_filepath,
+    )
 
     temp_path = ut.ensure_app_resource_dir('pydarknet', 'temp')
     ut.delete(temp_path)
@@ -702,7 +755,7 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
         for result in result_list1:
             if result['confidence'] < 0.2:
                 continue
-            print('    Found 1: %r' % (result, ))
+            print('    Found 1: %r' % (result,))
             xtl = int(result['xtl'])
             ytl = int(result['ytl'])
             xbr = int(result['xtl'] + result['width'])
@@ -711,7 +764,7 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
         for result in result_list2:
             if result['confidence'] < 0.2:
                 continue
-            print('    Found 2: %r' % (result, ))
+            print('    Found 2: %r' % (result,))
             xtl = int(result['xtl'])
             ytl = int(result['ytl'])
             xbr = int(result['xtl'] + result['width'])
@@ -730,6 +783,7 @@ def test_pydarknet2(input_gpath_list=None, config_filepath=None,
         output_fpaths.append(temp_filepath)
     return output_fpaths
 
+
 if __name__ == '__main__':
     r"""
     CommandLine:
@@ -737,6 +791,8 @@ if __name__ == '__main__':
         python -m pydarknet._pydarknet --allexamples
     """
     import multiprocessing
+
     multiprocessing.freeze_support()  # for win32
     import utool as ut  # NOQA
+
     ut.doctest_funcs()

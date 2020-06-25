@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from os.path import isfile, join, abspath
 import numpy as np
 from six.moves import cPickle as pickle
@@ -11,7 +12,7 @@ layer_list = []
 
 input_conv = True
 while True:
-    filename = '%s.%d.raw' % (name, layer, )
+    filename = '%s.%d.raw' % (name, layer,)
     filepath = join(path, filename)
     if not isfile(filepath):
         break
@@ -33,7 +34,15 @@ while True:
         n, c, size = raw[1:4]
         num = n * c * size * size
         expected = num + n
-        vals = (layer, n, c, size, size, n, expected, )
+        vals = (
+            layer,
+            n,
+            c,
+            size,
+            size,
+            n,
+            expected,
+        )
         print('[%3d] CONV (%d x %d x %d x %d) + %d = %d' % vals)
 
         params = raw[4:].view(np.float32)
@@ -46,10 +55,16 @@ while True:
         b = params[:n]
         w = params[n:]
 
-        vals = (layer, b[0], b[-1], w[0], w[-1], )
+        vals = (
+            layer,
+            b[0],
+            b[-1],
+            w[0],
+            w[-1],
+        )
         print('[%3d]     Check: %0.011f, %0.011f, %0.011f, %0.011f' % vals)
 
-        b_shape = (n, )
+        b_shape = (n,)
         w_shape = (n, c, size, size)
         b = np.reshape(b, b_shape)
         w = np.reshape(w, w_shape)
@@ -66,7 +81,13 @@ while True:
     elif type_ == 2:
         outputs, inputs = raw[1:3]
         expected = outputs * inputs + outputs
-        vals = (layer, outputs, inputs, outputs, expected, )
+        vals = (
+            layer,
+            outputs,
+            inputs,
+            outputs,
+            expected,
+        )
         print('[%3d] DENSE (%d x %d) + %d = %d' % vals)
 
         params = raw[3:].view(np.float32)
@@ -75,10 +96,16 @@ while True:
         b = params[:outputs]
         w = params[outputs:]
 
-        vals = (layer, b[0], b[-1], w[0], w[-1], )
+        vals = (
+            layer,
+            b[0],
+            b[-1],
+            w[0],
+            w[-1],
+        )
         print('[%3d]     Check: %0.011f, %0.011f, %0.011f, %0.011f' % vals)
 
-        b_shape = (outputs, )
+        b_shape = (outputs,)
         w_shape = (inputs, outputs)
         b = np.reshape(b, b_shape)
         w = np.reshape(w, w_shape)
@@ -105,6 +132,6 @@ while True:
 #     print(layer.shape)
 # print(len(layer_list))
 
-filename = '%s.pickle' % (name, )
+filename = '%s.pickle' % (name,)
 filepath = join(path, filename)
 pickle.dump(layer_list, open(filepath, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)

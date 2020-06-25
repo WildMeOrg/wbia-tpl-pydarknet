@@ -12,4 +12,3 @@ ln -s ${wd}/$im ${wd}/$out
 done
 
 find ${wd}/labelled -name \*.JPEG > inet.val.list
-
