@@ -17,7 +17,12 @@ file(GLOB C_SOURCES "pydarknet/*.c")
 file(GLOB HEADER_SOURCES "pydarknet/*.h")
 file(GLOB CU_SOURCES "pydarknet/*.cu")
 
-add_library(pydarknet_s STATIC ${C_SOURCES})
+add_library(pydarknet_s STATIC "${C_SOURCES};${HEADER_SOURCES}")
+
+target_link_libraries(pydarknet_s
+    ${OpenCV_LIBS}
+    ${CMAKE_THREAD_LIBS_INIT}
+)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
     set_target_properties(pydarknet_s PROPERTIES COMPILE_FLAGS -fPIC)
@@ -27,9 +32,12 @@ set_property(TARGET pydarknet_s PROPERTY COMPILE_DEFINITIONS PYDARKNET_STATIC)
 
 if (BUILD_CUDA_LIB)
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-DPYDARKNET_USE_CUDA")
+    # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--gpu-architecture=compute_50;--gpu-code=compute_50;--compiler-options;${CFLAGS}")
+    # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--gpu-architecture=compute_50;--gpu-code=compute_50;--compiler-options")
 
-    if(CMAKE_COMPILER_IS_GNUCC)
-        set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler;-fPIC;" )
+    if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
+        set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler")
+        set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-fPIC")
         if (NVCC_COMPILER_BINDIR)
             set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--compiler-bindir=${NVCC_COMPILER_BINDIR}")
         endif()
@@ -37,9 +45,20 @@ if (BUILD_CUDA_LIB)
         set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};" )
     endif()
 
-    cuda_add_library(pydarknet_cuda_s STATIC ${CU_SOURCES})
+    cuda_add_library(pydarknet_cuda_s STATIC "${C_SOURCES};${HEADER_SOURCES};${CU_SOURCES}")
+
+    target_link_libraries(pydarknet_cuda_s
+        ${OpenCV_LIBS}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${CUDA_LIBRARIES}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_curand_LIBRARY}
+    )
 
     set_property(TARGET pydarknet_cuda_s PROPERTY COMPILE_DEFINITIONS PYDARKNET_STATIC)
+    if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
+        set_target_properties(pydarknet_cuda_s PROPERTIES COMPILE_FLAGS -fPIC)
+    endif()
 endif()
 
 add_library(pydarknet SHARED "${HEADER_SOURCES}")
