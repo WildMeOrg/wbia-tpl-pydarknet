@@ -167,7 +167,7 @@ def _parse_class_list(classes_filepath):
 # Load Dynamic Library
 # =================================
 _update_globals(verbose=False)
-DARKNET_CLIB = _load_c_shared_library(METHODS, device=DEVICE)
+DARKNET_CLIB, CFUNC = _load_c_shared_library(METHODS, device=DEVICE)
 
 
 # =================================

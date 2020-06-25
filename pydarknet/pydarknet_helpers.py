@@ -66,19 +66,35 @@ def _extract_np_array(size_list, ptr_list, arr_t, arr_dtype, arr_dim):
     return arr_list
 
 
-def _load_c_shared_library(METHODS, device='cpu'):
-    ''' Loads the pydarknet dynamic library and defines its functions '''
+def _find_c_shared_library_by_device(device='cpu'):
     root_dir = realpath(join(dirname(__file__), 'lib'))
-    # libname = 'pydarknet.%s' % (device,)
-    libname = 'pydarknet'
+
+    if device in ['cpu']:
+        libname = 'pydarknet'
+    elif device in ['gpu']:
+        libname = 'pydarknet_cuda'
+    else:
+        raise ValueError('device %r not recognized' % (device, ))
+
     try:
         darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
     except ImportError:
-        print('[pydarknet] CPU fallback for: %s' % (libname,))
-        device = 'cpu'
-        libname = 'pydarknet.%s' % (device,)
-        darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
+        if device not in ['cpu']:
+            print('[pydarknet] CPU fallback for: %s' % (libname,))
+            darknet_clib, def_cfunc = _find_c_shared_library_by_device()
+        else:
+            raise RuntimeError('Could not load library')
+
+    return darknet_clib, def_cfunc
+
+
+def _load_c_shared_library(METHODS, device='cpu'):
+    ''' Loads the pydarknet dynamic library and defines its functions '''
+
+    darknet_clib, def_cfunc = _find_c_shared_library_by_device(device=device)
+
     # Load and expose methods from lib
     for method in METHODS.keys():
         def_cfunc(METHODS[method][1], method, METHODS[method][0])
-    return darknet_clib
+
+    return darknet_clib, def_cfunc
