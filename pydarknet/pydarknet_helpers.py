@@ -74,7 +74,7 @@ def _find_c_shared_library_by_device(device='cpu'):
     elif device in ['gpu']:
         libname = 'pydarknet_cuda'
     else:
-        raise ValueError('device %r not recognized' % (device, ))
+        raise ValueError('device %r not recognized' % (device,))
 
     try:
         darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
