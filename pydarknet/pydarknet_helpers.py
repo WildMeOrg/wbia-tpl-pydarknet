@@ -69,7 +69,8 @@ def _extract_np_array(size_list, ptr_list, arr_t, arr_dtype, arr_dim):
 def _load_c_shared_library(METHODS, device='cpu'):
     ''' Loads the pydarknet dynamic library and defines its functions '''
     root_dir = realpath(join(dirname(__file__), 'lib'))
-    libname = 'pydarknet.%s' % (device,)
+    # libname = 'pydarknet.%s' % (device,)
+    libname = 'pydarknet'
     try:
         darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
     except ImportError:

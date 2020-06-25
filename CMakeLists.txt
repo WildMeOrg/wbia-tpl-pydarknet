@@ -100,16 +100,25 @@ set(NVCC_COMPILER_BINDIR "" CACHE PATH  "Directory where nvcc should look for C+
 
 find_package( OpenCV REQUIRED )
 IF(OpenCV_FOUND)
+  add_definitions(-DOPENCV)
   include_directories(${OpenCV_INCLUDE_DIR})
 ELSE()
   message(FATAL_ERROR "OpenCV NOT found")
 ENDIF()
 
+find_package( Threads REQUIRED )
+IF(Threads_FOUND)
+  message(STATUS "Threads found")
+ELSE()
+  message(FATAL_ERROR "Threads NOT found")
+ENDIF()
 
 # CUDA support
 if (BUILD_CUDA_LIB)
     find_package(CUDA)
     if (CUDA_FOUND)
+        enable_language(CUDA)
+        add_definitions(-DGPU)
         message(STATUS "CUDA found (include: ${CUDA_INCLUDE_DIRS}, lib: ${CUDA_LIBRARIES})")
         include_directories(${CUDA_INCLUDE_DIRS})
     else(CUDA_FOUND)
@@ -129,7 +138,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "MSVC" OR CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # lots of warnings with cl.exe right now, use /W1
     add_definitions("/W1 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS /bigobj")
 else()
-    add_definitions( "-Wall -Wno-unknown-pragmas -Wno-unused-function" )
+    add_definitions("-Wall -O2 -Wno-unknown-pragmas -Wno-unused-function")
 endif()
 
 # install and export variables
