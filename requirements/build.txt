@@ -1,0 +1,7 @@
+cmake
+ninja
+scikit-build
+setuptools>=34.1.0
+wheel
+
+# Also a dev install of OpenCV

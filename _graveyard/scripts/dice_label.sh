@@ -17,4 +17,3 @@ mv images/orig/* images/train
 
 find `pwd`/images/train > dice.train.list -name \*.jpg
 find `pwd`/images/val > dice.val.list -name \*.jpg
-

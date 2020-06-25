@@ -31,3 +31,8 @@ failed_doctests.txt
 test_times.txt.backup
 temp/
 timeings.txt
+
+_skbuild/
+src/cpp/pydarknet/config.h
+pip-wheel-metadata/
+htmlcov/
