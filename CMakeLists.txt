@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13.0)
-set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-    cmake_policy(SET CMP0042 NEW)
+  cmake_policy(SET CMP0003 NEW)
+  cmake_policy(SET CMP0042 NEW)
 endif(COMMAND cmake_policy)
 
 project(pydarknet LANGUAGES C CXX)
@@ -16,8 +16,7 @@ function(_pycmd outvar cmd)
     COMMAND python -c "${cmd}"
     RESULT_VARIABLE _exitcode
     OUTPUT_VARIABLE _output
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   if(NOT ${_exitcode} EQUAL 0)
     message(ERROR "Failed when running python code: \"\"\"
 ${cmd}\"\"\"")
@@ -25,68 +24,70 @@ ${cmd}\"\"\"")
   endif()
   # Remove supurflous newlines (artifacts of print)
   string(STRIP "${_output}" _output)
-  set(${outvar} "${_output}" PARENT_SCOPE)
+  set(${outvar}
+      "${_output}"
+      PARENT_SCOPE)
 endfunction()
 _pycmd(PYDARKNET_VERSION "import setup; print(setup.VERSION)")
 
 message(STATUS "PYDARKNET_VERSION = ${PYDARKNET_VERSION}")
 
-DISSECT_VERSION()
-GET_OS_INFO()
+dissect_version()
+get_os_info()
 
-if (OS_IS_MACOS)
-    message(STATUS "INCLUDING MACPORTS")
+if(OS_IS_MACOS)
+  message(STATUS "INCLUDING MACPORTS")
 
-    include_directories(/opt/local/include)
-    link_directories(/opt/local/lib)
+  include_directories(/opt/local/include)
+  link_directories(/opt/local/lib)
 
-    set(CMAKE_INSTALL_RPATH "/opt/local/lib")
+  set(CMAKE_INSTALL_RPATH "/opt/local/lib")
 
-    # Add flags to support clang2
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
+  # Add flags to support clang2
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 endif()
 
-# Setup basic python stuff and ensure we have skbuild
-#list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake")
-#include( skbuild-helpers )
+# Setup basic python stuff and ensure we have skbuild list(INSERT
+# CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake") include( skbuild-helpers )
 
-#######################################
+# ##############################################################################
 
 # detect if using the Clang compiler
 if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_COMPILER_IS_CLANG 1)
-endif ()
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_COMPILER_IS_CLANGXX 1)
-endif ()
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Add an "uninstall" target
-CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/cmake/uninstall_target.cmake.in"
-    "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
-ADD_CUSTOM_TARGET (uninstall "${CMAKE_COMMAND}" -P
-    "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
+configure_file("${PROJECT_SOURCE_DIR}/cmake/uninstall_target.cmake.in"
+               "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
+add_custom_target(uninstall "${CMAKE_COMMAND}" -P
+                            "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
 
-# Set the build type.  Options are:
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
+# Set the build type.  Options are: Debug          : w/ debug symbols, w/o
+# optimization Release        : w/o debug symbols, w/ optimization
+# RelWithDebInfo : w/ debug symbols, w/ optimization MinSizeRel     : w/o debug
+# symbols, w/ optimization, stripped binaries
 
-if (NOT CMAKE_BUILD_TYPE)
-    #set(CMAKE_BUILD_TYPE Release)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
-    #set(CMAKE_BUILD_TYPE Debug)
+if(NOT CMAKE_BUILD_TYPE)
+  # set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE
+      RelWithDebInfo
+      CACHE STRING "Build type" FORCE)
+  # set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-#set the default path for built executables to the "bin" directory
+# set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
+# set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 # set output path for tests
 set(TEST_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test)
@@ -96,49 +97,56 @@ option(BUILD_EXAMPLES "Build examples" ON)
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_DOC "Build documentation" ON)
 
-set(NVCC_COMPILER_BINDIR "" CACHE PATH  "Directory where nvcc should look for C++ compiler. This is passed to nvcc through the --compiler-bindir option.")
+set(NVCC_COMPILER_BINDIR
+    ""
+    CACHE
+      PATH
+      "Directory where nvcc should look for C++ compiler. This is passed to nvcc through the --compiler-bindir option."
+)
 
-find_package( OpenCV REQUIRED )
-IF(OpenCV_FOUND)
+find_package(OpenCV REQUIRED)
+if(OpenCV_FOUND)
   add_definitions(-DOPENCV)
   include_directories(${OpenCV_INCLUDE_DIR})
-ELSE()
+else()
   message(FATAL_ERROR "OpenCV NOT found")
-ENDIF()
+endif()
 
-find_package( Threads REQUIRED )
-IF(Threads_FOUND)
+find_package(Threads REQUIRED)
+if(Threads_FOUND)
   message(STATUS "Threads found")
-ELSE()
+else()
   message(FATAL_ERROR "Threads NOT found")
-ENDIF()
+endif()
 
 # CUDA support
-if (BUILD_CUDA_LIB)
-    find_package(CUDA)
-    if (CUDA_FOUND)
-        enable_language(CUDA)
-        add_definitions(-DGPU)
-        message(STATUS "CUDA found (include: ${CUDA_INCLUDE_DIRS}, lib: ${CUDA_LIBRARIES})")
-        include_directories(${CUDA_INCLUDE_DIRS})
-    else(CUDA_FOUND)
-        message(STATUS "CUDA not found, CUDA library will not be built")
-        set(BUILD_CUDA_LIB OFF)
-    endif(CUDA_FOUND)
+if(BUILD_CUDA_LIB)
+  find_package(CUDA)
+  if(CUDA_FOUND)
+    enable_language(CUDA)
+    add_definitions(-DGPU)
+    message(
+      STATUS
+        "CUDA found (include: ${CUDA_INCLUDE_DIRS}, lib: ${CUDA_LIBRARIES})")
+    include_directories(${CUDA_INCLUDE_DIRS})
+  else(CUDA_FOUND)
+    message(STATUS "CUDA not found, CUDA library will not be built")
+    set(BUILD_CUDA_LIB OFF)
+  endif(CUDA_FOUND)
 endif(BUILD_CUDA_LIB)
 
 find_package(PkgConfig REQUIRED)
 
-#set the C/C++ include path to the "include" directory
+# set the C/C++ include path to the "include" directory
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/src/cpp)
 
-# require proper c++
-#add_definitions( "-Wall -ansi -pedantic" )
+# require proper c++ add_definitions( "-Wall -ansi -pedantic" )
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC" OR CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    # lots of warnings with cl.exe right now, use /W1
-    add_definitions("/W1 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS /bigobj")
+  # lots of warnings with cl.exe right now, use /W1
+  add_definitions(
+    "/W1 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS /bigobj")
 else()
-    add_definitions("-Wall -O2 -Wno-unknown-pragmas -Wno-unused-function")
+  add_definitions("-Wall -O2 -Wno-unknown-pragmas -Wno-unused-function")
 endif()
 
 # install and export variables
@@ -149,62 +157,50 @@ set(project_config "${generated_dir}/pydarknet-config.cmake")
 set(targets_export_name "pydarknet-targets")
 set(namespace "pydarknet::")
 
-if (SKBUILD)
+if(SKBUILD)
   # Override output paths when using scikit-build
   set(PYDARKNET_LIB_INSTALL_DIR "pydarknet/lib")
   set(PYDARKNET_INCLUDE_INSTALL_DIR "pydarknet/include")
 endif()
 
-if (NOT SKBUILD)
-  add_subdirectory( CMake )
+if(NOT SKBUILD)
+  add_subdirectory(CMake)
 endif()
-add_subdirectory( src )
-if (BUILD_EXAMPLES)
-  add_subdirectory( examples )
+add_subdirectory(src)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
-if (BUILD_TESTS)
-  add_subdirectory( test )
-endif (BUILD_TESTS)
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif(BUILD_TESTS)
 
-# CMake configuration file creation
-# Include module with fuction 'write_basic_package_version_file'
+# CMake configuration file creation Include module with fuction
+# 'write_basic_package_version_file'
 include(CMakePackageConfigHelpers)
 
-# Configure 'pydarknet-config-version.cmake'
-# Note: PYDARKNET_VERSION is used as a VERSION
+# Configure 'pydarknet-config-version.cmake' Note: PYDARKNET_VERSION is used as
+# a VERSION
 write_basic_package_version_file(
-    "${version_config}"
-    VERSION ${PYDARKNET_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+  "${version_config}"
+  VERSION ${PYDARKNET_VERSION}
+  COMPATIBILITY SameMajorVersion)
 
-# Configure 'pydarknet-config.cmake'
-# Use variables:
-#   * targets_export_name
-#   * PROJECT_NAME
-configure_package_config_file(
-  "cmake/Config.cmake.in"
-    "${project_config}"
-    INSTALL_DESTINATION "${config_install_dir}"
-)
+# Configure 'pydarknet-config.cmake' Use variables: * targets_export_name *
+# PROJECT_NAME
+configure_package_config_file("cmake/Config.cmake.in" "${project_config}"
+                              INSTALL_DESTINATION "${config_install_dir}")
 
-if (NOT SKBUILD)
-  # Config
-  #   * <prefix>/lib/cmake/pydarknet/pydarknet-config.cmake
-  #   * <prefix>/lib/cmake/pydarknet/pydarknet-config-version.cmake
+if(NOT SKBUILD)
+  # Config * <prefix>/lib/cmake/pydarknet/pydarknet-config.cmake *
+  # <prefix>/lib/cmake/pydarknet/pydarknet-config-version.cmake
+  install(FILES "${project_config}" "${version_config}"
+          DESTINATION "${config_install_dir}")
+  # Config * <prefix>/lib/cmake/pydarknet/pydarknet-targets.cmake
   install(
-      FILES "${project_config}" "${version_config}"
-      DESTINATION "${config_install_dir}"
-  )
-  # Config
-  #   * <prefix>/lib/cmake/pydarknet/pydarknet-targets.cmake
-  install(
-      EXPORT "${targets_export_name}"
-      NAMESPACE "${namespace}"
-      DESTINATION "${config_install_dir}"
-  )
+    EXPORT "${targets_export_name}"
+    NAMESPACE "${namespace}"
+    DESTINATION "${config_install_dir}")
 endif()
-
 
 # CPACK options
 
@@ -225,7 +221,7 @@ if(EXISTS ${NSIS_PROGRAM})
 endif(EXISTS ${NSIS_PROGRAM})
 # dpkg
 find_program(PACKAGE_MAKER_PROGRAM PackageMaker
-      HINTS /Developer/Applications/Utilities)
+             HINTS /Developer/Applications/Utilities)
 if(EXISTS ${PACKAGE_MAKER_PROGRAM})
   list(APPEND CPACK_GENERATOR "PackageMaker")
 endif(EXISTS ${PACKAGE_MAKER_PROGRAM})
@@ -236,12 +232,11 @@ set(CPACK_SET_DESTDIR ON)
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_CONTACT "Marius Muja")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-SET(CPACK_PACKAGE_VERSION ${PYDARKNET_VERSION})
-SET(CPACK_PACKAGE_VERSION_MAJOR ${PYDARKNET_VERSION_MAJOR})
-SET(CPACK_PACKAGE_VERSION_MINOR ${PYDARKNET_VERSION_MINOR})
-SET(CPACK_PACKAGE_VERSION_PATCH ${PYDARKNET_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION ${PYDARKNET_VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${PYDARKNET_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PYDARKNET_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PYDARKNET_VERSION_PATCH})
 include(CPack)
-
 
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
