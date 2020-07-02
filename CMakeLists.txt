@@ -9,7 +9,7 @@ endif(COMMAND cmake_policy)
 project(pydarknet LANGUAGES C CXX)
 message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
 
-if (SKBUILD)
+if(SKBUILD)
   find_package(PythonExtensions REQUIRED)
 endif()
 
@@ -51,10 +51,10 @@ if(OS_IS_MACOS)
 
   set(CMAKE_INSTALL_RPATH "/opt/local/lib")
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 endif()
 
 # Setup basic python stuff and ensure we have skbuild list(INSERT
@@ -170,16 +170,16 @@ if(SKBUILD)
   set(PYDARKNET_INCLUDE_INSTALL_DIR "pydarknet/include")
 endif()
 
-if (NOT SKBUILD)
+if(NOT SKBUILD)
   add_subdirectory("${CMAKE_SOURCE_DIR}/CMake")
 endif()
 add_subdirectory("${CMAKE_SOURCE_DIR}/src")
-if (BUILD_EXAMPLES)
+if(BUILD_EXAMPLES)
   add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
 endif(BUILD_EXAMPLES)
-if (BUILD_TESTS)
+if(BUILD_TESTS)
   add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
-endif (BUILD_TESTS)
+endif(BUILD_TESTS)
 
 # CMake configuration file creation Include module with fuction
 # 'write_basic_package_version_file'
