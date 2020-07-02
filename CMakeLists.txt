@@ -7,6 +7,12 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 project(pydarknet LANGUAGES C CXX)
+message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+
+if (SKBUILD)
+  find_package(PythonExtensions REQUIRED)
+endif()
+
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 include(${PROJECT_SOURCE_DIR}/cmake/pydarknet_utils.cmake)
@@ -41,13 +47,14 @@ if(OS_IS_MACOS)
   include_directories(/opt/local/include)
   link_directories(/opt/local/lib)
 
+  find_package(Eigen3 3 REQUIRED NO_MODULE)
+
   set(CMAKE_INSTALL_RPATH "/opt/local/lib")
 
-  # Add flags to support clang2
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 endif()
 
 # Setup basic python stuff and ensure we have skbuild list(INSERT
@@ -93,8 +100,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(TEST_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test)
 
 option(BUILD_CUDA_LIB "Build CUDA library" ON)
-option(BUILD_EXAMPLES "Build examples" ON)
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_DOC "Build documentation" ON)
 
 set(NVCC_COMPILER_BINDIR
@@ -163,16 +170,16 @@ if(SKBUILD)
   set(PYDARKNET_INCLUDE_INSTALL_DIR "pydarknet/include")
 endif()
 
-if(NOT SKBUILD)
-  add_subdirectory(CMake)
+if (NOT SKBUILD)
+  add_subdirectory("${CMAKE_SOURCE_DIR}/CMake")
 endif()
-add_subdirectory(src)
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
+add_subdirectory("${CMAKE_SOURCE_DIR}/src")
+if (BUILD_EXAMPLES)
+  add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
 endif(BUILD_EXAMPLES)
-if(BUILD_TESTS)
-  add_subdirectory(test)
-endif(BUILD_TESTS)
+if (BUILD_TESTS)
+  add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+endif (BUILD_TESTS)
 
 # CMake configuration file creation Include module with fuction
 # 'write_basic_package_version_file'
