@@ -15,7 +15,7 @@ endif()
 
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-include(${PROJECT_SOURCE_DIR}/cmake/pydarknet_utils.cmake)
+include(${PROJECT_SOURCE_DIR}/CMake/pydarknet_utils.cmake)
 
 function(_pycmd outvar cmd)
   execute_process(
@@ -74,7 +74,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Add an "uninstall" target
-configure_file("${PROJECT_SOURCE_DIR}/cmake/uninstall_target.cmake.in"
+configure_file("${PROJECT_SOURCE_DIR}/CMake/uninstall_target.cmake.in"
                "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P
                             "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
@@ -119,6 +119,19 @@ else()
   message(FATAL_ERROR "OpenCV NOT found")
 endif()
 
+if(OS_IS_MACOS)
+  find_package(Gflags REQUIRED)
+  if(Gflags_FOUND
+     OR GFLAGS_FOUND
+     OR GFLAGS_INCLUDE_DIRS)
+    message(STATUS "GFLAGS_INCLUDE_DIR: ${GFLAGS_INCLUDE_DIR}")
+    message(STATUS "GFLAGS_LIBRARIES: ${GFLAGS_LIBRARIES}")
+    include_directories(${GFLAGS_INCLUDE_DIR})
+  else()
+    message(FATAL_ERROR "GFlags NOT found")
+  endif()
+endif()
+
 find_package(Threads REQUIRED)
 if(Threads_FOUND)
   message(STATUS "Threads found")
@@ -157,7 +170,7 @@ else()
 endif()
 
 # install and export variables
-set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+set(config_install_dir "lib/CMake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/pydarknet-config-version.cmake")
 set(project_config "${generated_dir}/pydarknet-config.cmake")
@@ -194,15 +207,15 @@ write_basic_package_version_file(
 
 # Configure 'pydarknet-config.cmake' Use variables: * targets_export_name *
 # PROJECT_NAME
-configure_package_config_file("cmake/Config.cmake.in" "${project_config}"
+configure_package_config_file("CMake/Config.cmake.in" "${project_config}"
                               INSTALL_DESTINATION "${config_install_dir}")
 
 if(NOT SKBUILD)
-  # Config * <prefix>/lib/cmake/pydarknet/pydarknet-config.cmake *
-  # <prefix>/lib/cmake/pydarknet/pydarknet-config-version.cmake
+  # Config * <prefix>/lib/CMake/pydarknet/pydarknet-config.cmake *
+  # <prefix>/lib/CMake/pydarknet/pydarknet-config-version.cmake
   install(FILES "${project_config}" "${version_config}"
           DESTINATION "${config_install_dir}")
-  # Config * <prefix>/lib/cmake/pydarknet/pydarknet-targets.cmake
+  # Config * <prefix>/lib/CMake/pydarknet/pydarknet-targets.cmake
   install(
     EXPORT "${targets_export_name}"
     NAMESPACE "${namespace}"

@@ -1,0 +1,160 @@
+name: Build and upload to PyPI
+
+# Build on every branch push, tag push, and pull request change:
+on: push
+
+jobs:
+  setup:
+    name: Check Release
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.autobump.outputs.release }}
+      search_replace: ${{ steps.autobump.outputs.search_replace }}
+      version_file: ${{ steps.autobump.outputs.version_file }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Release - Autobump version preparation
+        id: autobump
+        run: |
+          # from refs/tags/vX.Y.Z get X.Y.Z
+          RELEASE="${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v') }}"
+          if [ "${RELEASE}" == "true" ]; then
+            echo "Release ${GITHUB_REF}"
+            VERSION=$(echo ${GITHUB_REF} | sed 's#.*/v##')
+            PLACEHOLDER="__version__ = '.*'"
+            SEARCH_REPLACE="s/${PLACEHOLDER}/__version__ = \'${VERSION}\'/g"
+            VERSION_FILE="vtool/__init__.py"
+
+            grep "${PLACEHOLDER}" "${VERSION_FILE}"
+          else
+            echo "Not Release"
+            SEARCH_REPLACE=""
+            VERSION_FILE=""
+          fi
+
+          echo "RELEASE=${RELEASE}"
+          echo "SEARCH_REPLACE=${SEARCH_REPLACE}"
+          echo "VERSION_FILE=${VERSION_FILE}"
+
+          echo "::set-output name=release::${RELEASE}"
+          echo "::set-output name=search_replace::${SEARCH_REPLACE}"
+          echo "::set-output name=version_file::${VERSION_FILE}"
+        shell: bash
+
+  build_wheels:
+    name: Build on ${{ matrix.os }}
+    needs: [setup]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: macOS - Prepare MacPorts - Prefer Xcode 11.5
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          xcode-select -p
+          xcodebuild -version
+          sudo xcode-select -s /Applications/Xcode_11.5.app/Contents/Developer
+          xcodebuild -version
+
+      - name: macOS - Cache MacPorts and OpenCV dependencies for macOS
+        id: caching
+        if: ${{ runner.os == 'macOS' }}
+        uses: actions/cache@v2
+        with:
+          path: |
+            /opt/local
+            /opt/opencv
+          # The key based on the file hash of the build script
+          # i.e. changing OPENCV_VERSION within the script will invalidate the cache
+          key: ${{ runner.os }}-build-opencv-macports-v1.0.0-${{ hashFiles('scripts/_install_opencv_*_on_macos.sh') }}
+
+      - name: macOS - Install MacPorts
+        if: ${{ runner.os == 'macOS' && steps.caching.outputs.cache-hit != 'true' }}
+        uses: WildbookOrg/wbia-pypkg-build/actions/macports@v1.0.0
+
+      - name: Release macOS - Autobump version for Mac
+        if: ${{ needs.setup.outputs.release == 'true' && runner.os == 'macOS' }}
+        run: |
+          sed -i "" "${{ needs.setup.outputs.search_replace }}" "${{ needs.setup.outputs.version_file }}"
+        shell: bash
+
+      - name: Release Linux - Autobump version for Linux
+        if: ${{ needs.setup.outputs.release == 'true' && runner.os == 'Linux' }}
+        run: |
+          sed -i "${{ needs.setup.outputs.search_replace }}" "${{ needs.setup.outputs.version_file }}"
+        shell: bash
+
+      - name: Build wheel
+        env:
+          CIBW_MANYLINUX_X86_64_IMAGE: wildme/manylinux:latest
+          CIBW_SKIP: cp27-* pp27-* pp36-* *-win32 *-win_amd64 *-manylinux_i686 *-manylinux_aarch64 *-manylinux_ppc64le *-manylinux_s390x
+          CIBW_BEFORE_BUILD_LINUX: bash scripts/ci_prepare_centos_for_build.sh
+          CIBW_BEFORE_BUILD_MACOS: bash scripts/ci_prepare_macos_for_build.sh
+          CIBW_TEST_COMMAND: python -c "import vtool; from vtool.__main__ import main; main()"
+        run: |
+          python -m pip install cibuildwheel==1.4.2
+          python -m cibuildwheel --output-dir wheelhouse
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build sdist
+    needs: [setup]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Release Linux - Autobump version for Linux
+        if: ${{ needs.setup.outputs.release == 'true' }}
+        run: |
+          sed -i "${{ needs.setup.outputs.search_replace }}" "${{ needs.setup.outputs.version_file }}"
+        shell: bash
+
+      - name: Build sdist
+        run: |
+          pip install scikit-build
+          python setup.py sdist
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+
+  upload_pypi:
+    name: Upload to PyPI
+    needs: [setup, build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: ${{ needs.setup.outputs.release == 'true' }}
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
