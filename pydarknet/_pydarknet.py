@@ -507,7 +507,7 @@ class Darknet_YOLO_Detector(object):
             >>> result = ('(input_gpath, result_list_) = %s' % (ut.repr2((input_gpath, result_list_)),))
             >>> print(result)
             >>> ut.quit_if_noshow()
-            >>> import plottool as pt
+            >>> import wbia.plottool as pt
             >>> ut.show_if_requested()
         """
         # Default values
@@ -647,8 +647,6 @@ def test_pydarknet():
         >>> ut.quit_if_noshow()
         >>> ut.show_if_requested()
     """
-    # import wbia
-    # from wbia.other.detectfuncs import export_to_xml
     dark = Darknet_YOLO_Detector()
     # TODO: move test images out of the repo. Grab them via utool
     import pydarknet
@@ -701,7 +699,7 @@ def test_pydarknet2(
         >>> exec(ut.execstr_dict(funckw), globals())
         >>> output_fpaths = test_pydarknet2(**funckw)
         >>> ut.quit_if_noshow()
-        >>> import plottool as pt
+        >>> import wbia.plottool as pt
         >>> inter = pt.MultiImageInteraction(output_fpaths)
         >>> inter.start()
         >>> ut.show_if_requested()
@@ -725,7 +723,6 @@ def test_pydarknet2(
         pass
 
     if input_gpath_list is None:
-        # TODO: move test images out of the repo. Grab them via utool
         pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
         input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
 

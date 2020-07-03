@@ -7,7 +7,7 @@ from os.path import join, realpath, dirname
 import numpy as np
 import ctypes as C
 import sys
-import wbia.detecttools.ctypes_interface as ctypes_interface
+from pydarknet import ctypes_interface
 
 
 def ensure_bytes_strings(str_list):

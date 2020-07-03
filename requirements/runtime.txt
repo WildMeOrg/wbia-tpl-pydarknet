@@ -1,2 +1,4 @@
-# wbia
+numpy
+opencv-python >= 4.2.0
+utool
 # wbia-utool
