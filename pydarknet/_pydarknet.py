@@ -127,18 +127,24 @@ BBOX_RESULT_LENGTH = None
 RESULT_LENGTH = None
 
 
-def _update_globals(grid=GRID, class_list=None, verbose=True):
-    if class_list is None:
-        config_url = CONFIG_URL_DICT['default']
-        classes_url = _parse_classes_from_cfg(config_url)
-        classes_filepath = ut.grab_file_url(
-            classes_url, appname='pydarknet', check_hash=True, verbose=verbose
-        )
-        class_list = _parse_class_list(classes_filepath)
-    if verbose:
-        print('UPDATING GLOBALS: %r, %r' % (grid, class_list,))
+def _update_globals(grid=GRID, class_list=None, verbose=True, num_classes_override=None):
+    if num_classes_override is None:
+        if class_list is None:
+            config_url = CONFIG_URL_DICT['default']
+            classes_url = _parse_classes_from_cfg(config_url)
+            classes_filepath = ut.grab_file_url(
+                classes_url, appname='pydarknet', check_hash=True, verbose=verbose
+            )
+            class_list = _parse_class_list(classes_filepath)
+        if verbose:
+            print('UPDATING GLOBALS: %r, %r' % (grid, class_list,))
+
+        num_classes = len(class_list)
+    else:
+        num_classes = num_classes_override
+
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
-    PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(class_list)
+    PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * num_classes
     BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
     RESULT_LENGTH = PROB_RESULT_LENGTH + BBOX_RESULT_LENGTH
 
@@ -166,7 +172,7 @@ def _parse_class_list(classes_filepath):
 # =================================
 # Load Dynamic Library
 # =================================
-_update_globals(verbose=False)
+_update_globals(verbose=False, num_classes_override=1)
 DARKNET_CLIB, CFUNC = _load_c_shared_library(METHODS, device=DEVICE)
 
 
