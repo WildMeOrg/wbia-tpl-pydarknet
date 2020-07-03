@@ -47,7 +47,7 @@ if(OS_IS_MACOS)
   include_directories(/opt/local/include)
   link_directories(/opt/local/lib)
 
-  find_package(Eigen3 3 REQUIRED NO_MODULE)
+  # find_package(Eigen3 3 REQUIRED NO_MODULE)
 
   set(CMAKE_INSTALL_RPATH "/opt/local/lib")
 
@@ -111,26 +111,15 @@ set(NVCC_COMPILER_BINDIR
       "Directory where nvcc should look for C++ compiler. This is passed to nvcc through the --compiler-bindir option."
 )
 
-find_package(OpenCV REQUIRED)
-if(OpenCV_FOUND)
-  add_definitions(-DOPENCV)
-  include_directories(${OpenCV_INCLUDE_DIR})
-else()
-  message(FATAL_ERROR "OpenCV NOT found")
-endif()
+# find_package(OpenCV REQUIRED) if(OpenCV_FOUND) add_definitions(-DOPENCV)
+# include_directories(${OpenCV_INCLUDE_DIR}) else() message(FATAL_ERROR "OpenCV
+# NOT found") endif()
 
-if(OS_IS_MACOS)
-  find_package(Gflags REQUIRED)
-  if(Gflags_FOUND
-     OR GFLAGS_FOUND
-     OR GFLAGS_INCLUDE_DIRS)
-    message(STATUS "GFLAGS_INCLUDE_DIR: ${GFLAGS_INCLUDE_DIR}")
-    message(STATUS "GFLAGS_LIBRARIES: ${GFLAGS_LIBRARIES}")
-    include_directories(${GFLAGS_INCLUDE_DIR})
-  else()
-    message(FATAL_ERROR "GFlags NOT found")
-  endif()
-endif()
+# if(OS_IS_MACOS) find_package(Gflags REQUIRED) if(Gflags_FOUND OR GFLAGS_FOUND
+# OR GFLAGS_INCLUDE_DIRS) message(STATUS "GFLAGS_INCLUDE_DIR:
+# ${GFLAGS_INCLUDE_DIR}") message(STATUS "GFLAGS_LIBRARIES:
+# ${GFLAGS_LIBRARIES}") include_directories(${GFLAGS_INCLUDE_DIR}) else()
+# message(FATAL_ERROR "GFlags NOT found") endif() endif()
 
 find_package(Threads REQUIRED)
 if(Threads_FOUND)
