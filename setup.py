@@ -53,31 +53,6 @@ def native_mb_python_tag(plat_impl=None, version_info=None):
     return mb_tag
 
 
-def parse_version(fpath='pydarknet/__init__.py'):
-    """
-    Statically parse the version number from a python file
-
-
-    """
-    import ast
-
-    if not exists(fpath):
-        raise ValueError('fpath={!r} does not exist'.format(fpath))
-    with open(fpath, 'r') as file_:
-        sourcecode = file_.read()
-    pt = ast.parse(sourcecode)
-
-    class VersionVisitor(ast.NodeVisitor):
-        def visit_Assign(self, node):
-            for target in node.targets:
-                if getattr(target, 'id', None) == '__version__':
-                    self.version = node.value.s
-
-    visitor = VersionVisitor()
-    visitor.visit(pt)
-    return visitor.version
-
-
 def parse_long_description(fpath='README.rst'):
     """
     Reads README text, but doesn't break if README does not exist.
@@ -176,7 +151,6 @@ NAME = 'wbia-pydarknet'
 
 
 MB_PYTHON_TAG = native_mb_python_tag()  # NOQA
-VERSION = version = parse_version('pydarknet/__init__.py')  # must be global for git tags
 
 AUTHORS = [
     'Jason Parham',
@@ -189,7 +163,6 @@ DESCRIPTION = 'PyDarknet - Random Forest / Hough Voting Detection Algorithm'
 
 KWARGS = OrderedDict(
     name=NAME,
-    version=VERSION,
     author=', '.join(AUTHORS),
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
@@ -203,6 +176,16 @@ KWARGS = OrderedDict(
         'tests': parse_requirements('requirements/tests.txt'),
         'build': parse_requirements('requirements/build.txt'),
         'runtime': parse_requirements('requirements/runtime.txt'),
+    },
+    # --- VERSION ---
+    # The following settings retreive the version from git.
+    # See https://github.com/pypa/setuptools_scm/ for more information
+    setup_requires=['setuptools_scm'],
+    use_scm_version={
+        'write_to': 'pydarknet/_version.py',
+        'write_to_template': '__version__ = "{version}"',
+        'tag_regex': '^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$',
+        'local_scheme': 'dirty-tag',
     },
     # --- PACKAGES ---
     # The combination of packages and package_dir is how scikit-build will

@@ -2,7 +2,10 @@
 # flake8: noqa
 from __future__ import absolute_import, division, print_function
 
-__version__ = '1.0.0'
+try:
+    from pydarknet._version import __version__
+except ImportError:
+    __version__ = '0.0.0'
 
 import utool as ut
 

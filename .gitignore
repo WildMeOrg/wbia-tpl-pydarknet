@@ -36,3 +36,6 @@ _skbuild/
 src/cpp/pydarknet/config.h
 pip-wheel-metadata/
 htmlcov/
+
+# setuptools_scm version discovery writes the version to <pkg>/_version.py
+**/_version.py
