@@ -75,7 +75,7 @@ if(OS_IS_LINUX)
     set_target_properties(pydarknet_cuda PROPERTIES LINKER_LANGUAGE CXX)
   endif()
 elseif(OS_IS_MACOS)
-  set(LINK_FLAG_PREFIX "-Wl,-all_load")
+  set(LINK_FLAG_PREFIX "-Wl,-force_load")
 
   set_target_properties(pydarknet PROPERTIES LINKER_LANGUAGE CXX)
 
