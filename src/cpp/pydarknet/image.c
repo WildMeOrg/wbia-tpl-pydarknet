@@ -348,11 +348,6 @@ void save_image_jpg(image p, char *name)
         }
     }
 
-
-    cvSaveImage
-
-    cvLoadImage
-
     cvSaveImage(buff, disp, 0);
     cvReleaseImage(&disp);
     free_image(copy);

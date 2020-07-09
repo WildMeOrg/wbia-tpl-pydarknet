@@ -1,0 +1,906 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pydarknet._pydarknet &#8212; wbia-pydarknet 3.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pydarknet._pydarknet</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">odict</span>
+<span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">C</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="nb">zip</span><span class="p">,</span> <span class="nb">range</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">abspath</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">join</span><span class="p">,</span> <span class="n">exists</span>
+<span class="kn">import</span> <span class="nn">utool</span> <span class="k">as</span> <span class="nn">ut</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">pydarknet.pydarknet_helpers</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">_load_c_shared_library</span><span class="p">,</span>
+    <span class="n">_cast_list_to_c</span><span class="p">,</span>
+    <span class="n">ensure_bytes_strings</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">VERBOSE_DARK</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">get_argflag</span><span class="p">(</span><span class="s1">&#39;--verbdark&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ut</span><span class="o">.</span><span class="n">VERBOSE</span>
+<span class="n">QUIET_DARK</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">get_argflag</span><span class="p">(</span><span class="s1">&#39;--quietdark&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ut</span><span class="o">.</span><span class="n">QUIET</span>
+
+<span class="n">DEVICE</span> <span class="o">=</span> <span class="s1">&#39;cpu&#39;</span> <span class="k">if</span> <span class="n">ut</span><span class="o">.</span><span class="n">get_argflag</span><span class="p">(</span><span class="s1">&#39;--cpudark&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;gpu&#39;</span>
+<span class="k">assert</span> <span class="n">DEVICE</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="s1">&#39;gpu&#39;</span><span class="p">]</span>
+
+
+<span class="n">CONFIG_URL_DICT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;template&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.template.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;original&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;old&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;v1&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;v2&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;v3&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;lynx&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.lynx.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cheetah&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.cheetah.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;seaturtle&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.sea_turtle.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;sandtiger&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_sandtiger.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;hammerhead&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_hammerhead.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;whalefluke&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;whalefluke_v2&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.v2.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;sea&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.sea.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;candidacy&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.candidacy.cfg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg&#39;</span><span class="p">,</span>
+    <span class="kc">None</span><span class="p">:</span> <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c1"># ============================</span>
+<span class="c1"># CTypes Interface Data Types</span>
+<span class="c1"># ============================</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bindings for C Variable Types</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">NP_FLAGS</span> <span class="o">=</span> <span class="s1">&#39;aligned, c_contiguous, writeable&#39;</span>
+<span class="c1"># Primatives</span>
+<span class="n">C_OBJ</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">c_void_p</span>
+<span class="n">C_BYTE</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">c_char</span>
+<span class="n">C_CHAR</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">c_char_p</span>
+<span class="n">C_INT</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">C_BOOL</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">c_bool</span>
+<span class="n">C_FLOAT</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">c_float</span>
+<span class="n">NP_INT8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
+<span class="n">NP_FLOAT32</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+<span class="c1"># Arrays</span>
+<span class="n">C_ARRAY_CHAR</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">C_CHAR</span><span class="p">)</span>
+<span class="n">C_ARRAY_FLOAT</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">C_FLOAT</span><span class="p">)</span>
+<span class="n">NP_ARRAY_INT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">C_INT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">NP_FLAGS</span><span class="p">)</span>
+<span class="c1"># NP_ARRAY_FLOAT = np.ctypeslib.ndpointer(dtype=NP_FLOAT32,     ndim=2, flags=NP_FLAGS)</span>
+<span class="n">NP_ARRAY_FLOAT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">NP_FLOAT32</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">NP_FLAGS</span><span class="p">)</span>
+<span class="n">RESULTS_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">NP_ARRAY_FLOAT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">NP_FLAGS</span><span class="p">)</span>
+
+
+<span class="c1"># =================================</span>
+<span class="c1"># Method Parameter Types</span>
+<span class="c1"># =================================</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">IMPORTANT:</span>
+<span class="sd">    For functions that return void, use Python None as the return value.</span>
+<span class="sd">    For functions that take no parameters, use the Python empty list [].</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">METHODS</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">METHODS</span><span class="p">[</span><span class="s1">&#39;init&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">C_CHAR</span><span class="p">,</span>  <span class="c1"># config_filepath</span>
+        <span class="n">C_CHAR</span><span class="p">,</span>  <span class="c1"># weights_filepath</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># verbose</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># quiet</span>
+    <span class="p">],</span>
+    <span class="n">C_OBJ</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">METHODS</span><span class="p">[</span><span class="s1">&#39;unload&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="n">C_OBJ</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># network</span>
+
+<span class="n">METHODS</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">C_OBJ</span><span class="p">,</span>  <span class="c1"># network</span>
+        <span class="n">C_CHAR</span><span class="p">,</span>  <span class="c1"># train_image_manifest</span>
+        <span class="n">C_CHAR</span><span class="p">,</span>  <span class="c1"># weights_path</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># num_input</span>
+        <span class="n">C_CHAR</span><span class="p">,</span>  <span class="c1"># final_weights_filepath</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># verbose</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># quiet</span>
+    <span class="p">],</span>
+    <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">METHODS</span><span class="p">[</span><span class="s1">&#39;detect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">C_OBJ</span><span class="p">,</span>  <span class="c1"># network</span>
+        <span class="n">C_ARRAY_CHAR</span><span class="p">,</span>  <span class="c1"># input_gpath_array</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># num_input</span>
+        <span class="n">C_FLOAT</span><span class="p">,</span>  <span class="c1"># sensitivity</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># grid</span>
+        <span class="n">NP_ARRAY_FLOAT</span><span class="p">,</span>  <span class="c1"># results_array</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># verbose</span>
+        <span class="n">C_INT</span><span class="p">,</span>  <span class="c1"># quiet</span>
+    <span class="p">],</span>
+    <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLASS</span> <span class="o">=</span> <span class="s1">&#39;UNKNOWN&#39;</span>
+<span class="n">SIDES</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">BOXES</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">GRID</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">PROB_RESULT_LENGTH</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">BBOX_RESULT_LENGTH</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">RESULT_LENGTH</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_update_globals</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">GRID</span><span class="p">,</span> <span class="n">class_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_classes_override</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">num_classes_override</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">class_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config_url</span> <span class="o">=</span> <span class="n">CONFIG_URL_DICT</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+            <span class="n">classes_url</span> <span class="o">=</span> <span class="n">_parse_classes_from_cfg</span><span class="p">(</span><span class="n">config_url</span><span class="p">)</span>
+            <span class="n">classes_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span>
+                <span class="n">classes_url</span><span class="p">,</span> <span class="n">appname</span><span class="o">=</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+            <span class="p">)</span>
+            <span class="n">class_list</span> <span class="o">=</span> <span class="n">_parse_class_list</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;UPDATING GLOBALS: </span><span class="si">%r</span><span class="s1">, </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">class_list</span><span class="p">,))</span>
+
+        <span class="n">num_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_list</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes_override</span>
+
+    <span class="k">global</span> <span class="n">PROB_RESULT_LENGTH</span><span class="p">,</span> <span class="n">BBOX_RESULT_LENGTH</span><span class="p">,</span> <span class="n">RESULT_LENGTH</span>
+    <span class="n">PROB_RESULT_LENGTH</span> <span class="o">=</span> <span class="n">grid</span> <span class="o">*</span> <span class="n">SIDES</span> <span class="o">*</span> <span class="n">SIDES</span> <span class="o">*</span> <span class="n">BOXES</span> <span class="o">*</span> <span class="n">num_classes</span>
+    <span class="n">BBOX_RESULT_LENGTH</span> <span class="o">=</span> <span class="n">grid</span> <span class="o">*</span> <span class="n">SIDES</span> <span class="o">*</span> <span class="n">SIDES</span> <span class="o">*</span> <span class="n">BOXES</span> <span class="o">*</span> <span class="mi">4</span>
+    <span class="n">RESULT_LENGTH</span> <span class="o">=</span> <span class="n">PROB_RESULT_LENGTH</span> <span class="o">+</span> <span class="n">BBOX_RESULT_LENGTH</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_weights_from_cfg</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.cfg&#39;</span><span class="p">,</span> <span class="s1">&#39;.weights&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_classes_from_cfg</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.cfg&#39;</span><span class="p">,</span> <span class="s1">&#39;.classes&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_class_list</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">):</span>
+    <span class="c1"># Load classes from file into the class list</span>
+    <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span>
+    <span class="n">class_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">classes</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">class_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">class_list</span>
+
+
+<span class="c1"># =================================</span>
+<span class="c1"># Load Dynamic Library</span>
+<span class="c1"># =================================</span>
+<span class="n">_update_globals</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_classes_override</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">DARKNET_CLIB</span><span class="p">,</span> <span class="n">CFUNC</span> <span class="o">=</span> <span class="n">_load_c_shared_library</span><span class="p">(</span><span class="n">METHODS</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+
+
+<span class="c1"># =================================</span>
+<span class="c1"># Darknet YOLO Detector</span>
+<span class="c1"># =================================</span>
+<div class="viewcode-block" id="Darknet_YOLO_Detector"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector">[docs]</a><span class="k">class</span> <span class="nc">Darknet_YOLO_Detector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="n">dark</span><span class="p">,</span>
+        <span class="n">config_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">weights_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">classes_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">quiet</span><span class="o">=</span><span class="n">QUIET_DARK</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Create the C object for the PyDarknet YOLO detector.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                verbose (bool, optional): verbose flag; defaults to --verbdark flag</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                detector (object): the Darknet YOLO Detector object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py init] config_filepath = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_filepath</span><span class="p">,))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py init] weights_filepath = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">weights_filepath</span><span class="p">,))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py init] classes_filepath = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">classes_filepath</span><span class="p">,))</span>
+
+        <span class="c1"># Get correct config if specified with shorthand</span>
+        <span class="n">config_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">config_filepath</span> <span class="ow">in</span> <span class="n">CONFIG_URL_DICT</span><span class="p">:</span>
+            <span class="n">config_url</span> <span class="o">=</span> <span class="n">CONFIG_URL_DICT</span><span class="p">[</span><span class="n">config_filepath</span><span class="p">]</span>
+            <span class="n">config_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span>
+                <span class="n">config_url</span><span class="p">,</span> <span class="n">appname</span><span class="o">=</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Get correct weights if specified with shorthand</span>
+        <span class="k">if</span> <span class="n">weights_filepath</span> <span class="ow">in</span> <span class="n">CONFIG_URL_DICT</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">weights_filepath</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">config_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">config_url_</span> <span class="o">=</span> <span class="n">config_url</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">config_url_</span> <span class="o">=</span> <span class="n">CONFIG_URL_DICT</span><span class="p">[</span><span class="n">weights_filepath</span><span class="p">]</span>
+            <span class="n">weights_url</span> <span class="o">=</span> <span class="n">_parse_weights_from_cfg</span><span class="p">(</span><span class="n">config_url_</span><span class="p">)</span>
+            <span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span>
+                <span class="n">weights_url</span><span class="p">,</span> <span class="n">appname</span><span class="o">=</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Get correct classes if specified with shorthand</span>
+        <span class="k">if</span> <span class="n">classes_filepath</span> <span class="ow">in</span> <span class="n">CONFIG_URL_DICT</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">classes_filepath</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">config_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">config_url_</span> <span class="o">=</span> <span class="n">config_url</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">config_url_</span> <span class="o">=</span> <span class="n">CONFIG_URL_DICT</span><span class="p">[</span><span class="n">classes_filepath</span><span class="p">]</span>
+            <span class="n">classes_url</span> <span class="o">=</span> <span class="n">_parse_classes_from_cfg</span><span class="p">(</span><span class="n">config_url_</span><span class="p">)</span>
+            <span class="n">classes_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span>
+                <span class="n">classes_url</span><span class="p">,</span> <span class="n">appname</span><span class="o">=</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span>
+        <span class="n">config_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">)</span>
+        <span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">exists</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span>
+        <span class="n">classes_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span>
+
+        <span class="n">dark</span><span class="o">.</span><span class="n">class_list</span> <span class="o">=</span> <span class="n">_parse_class_list</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span>
+
+        <span class="c1"># Save settings</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">quiet</span> <span class="o">=</span> <span class="n">quiet</span>
+
+        <span class="c1"># Load the network</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">,</span> <span class="n">weights_filepath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dark</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dark</span><span class="o">.</span><span class="n">quiet</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py] New Darknet_YOLO Object Created&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="n">dark</span><span class="p">):</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">_unload</span><span class="p">()</span>
+        <span class="c1"># super(Darknet_YOLO_Detector, dark).__del__()</span>
+
+    <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">config_filepath</span><span class="p">,</span> <span class="n">weights_filepath</span><span class="p">):</span>
+        <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
+            <span class="n">config_filepath</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">weights_filepath</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+        <span class="n">params_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">config_filepath</span><span class="p">,</span>
+            <span class="n">weights_filepath</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">dark</span><span class="o">.</span><span class="n">verbose</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">dark</span><span class="o">.</span><span class="n">quiet</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">DARKNET_CLIB</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="o">*</span><span class="n">params_list</span><span class="p">)</span>
+        <span class="n">conclude</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dark</span><span class="o">.</span><span class="n">quiet</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py] Took </span><span class="si">%r</span><span class="s1"> seconds to load&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">conclude</span> <span class="o">-</span> <span class="n">begin</span><span class="p">,))</span>
+
+    <span class="k">def</span> <span class="nf">_unload</span><span class="p">(</span><span class="n">dark</span><span class="p">):</span>
+        <span class="n">params_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">dark</span><span class="o">.</span><span class="n">net</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">DARKNET_CLIB</span><span class="o">.</span><span class="n">unload</span><span class="p">(</span><span class="o">*</span><span class="n">params_list</span><span class="p">)</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_train_setup</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">voc_path</span><span class="p">,</span> <span class="n">weights_path</span><span class="p">,</span> <span class="n">dataset_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;val&#39;</span><span class="p">]):</span>
+
+        <span class="n">class_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">annotations_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">voc_path</span><span class="p">,</span> <span class="s1">&#39;Annotations&#39;</span><span class="p">)</span>
+        <span class="n">imagesets_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">voc_path</span><span class="p">,</span> <span class="s1">&#39;ImageSets&#39;</span><span class="p">)</span>
+        <span class="n">jpegimages_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">voc_path</span><span class="p">,</span> <span class="s1">&#39;JPEGImages&#39;</span><span class="p">)</span>
+        <span class="n">label_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">voc_path</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">)</span>
+
+        <span class="n">ut</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">label_path</span><span class="p">)</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">ensuredir</span><span class="p">(</span><span class="n">label_path</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_convert_annotation</span><span class="p">(</span><span class="n">image_id</span><span class="p">):</span>
+            <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+
+            <span class="k">def</span> <span class="nf">_convert</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">box</span><span class="p">):</span>
+                <span class="n">dw</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">dh</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">dw</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">dw</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">dh</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">h</span> <span class="o">*</span> <span class="n">dh</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">label_path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.txt&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_id</span><span class="p">,)),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">annotations_path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.xml&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_id</span><span class="p">,)),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+                    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+                    <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+                    <span class="n">size</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">)</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;width&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                    <span class="n">h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;difficult&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">class_</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+                        <span class="k">if</span> <span class="n">class_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">class_list</span><span class="p">:</span>
+                            <span class="n">class_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+                        <span class="n">class_id</span> <span class="o">=</span> <span class="n">class_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+                        <span class="n">xmlbox</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;bndbox&#39;</span><span class="p">)</span>
+                        <span class="n">b</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                            <span class="nb">map</span><span class="p">(</span>
+                                <span class="nb">float</span><span class="p">,</span>
+                                <span class="p">[</span>
+                                    <span class="n">xmlbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;xmin&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                                    <span class="n">xmlbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;xmax&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                                    <span class="n">xmlbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;ymin&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                                    <span class="n">xmlbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;ymax&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                                <span class="p">],</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="n">bb</span> <span class="o">=</span> <span class="n">_convert</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span> <span class="n">b</span><span class="p">)</span>
+                        <span class="n">bb_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">bb</span><span class="p">])</span>
+                        <span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">class_id</span><span class="p">,</span> <span class="n">bb_str</span><span class="p">))</span>
+
+        <span class="n">num_images</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py train] Processing manifest...&#39;</span><span class="p">)</span>
+        <span class="n">manifest_filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">voc_path</span><span class="p">,</span> <span class="s1">&#39;manifest.txt&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">manifest_filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">manifest</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">dataset_list</span><span class="p">:</span>
+                <span class="n">dataset_filename</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">imagesets_path</span><span class="p">,</span> <span class="s1">&#39;Main&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.txt&#39;</span> <span class="o">%</span> <span class="n">dataset_name</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dataset_filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dataset</span><span class="p">:</span>
+                    <span class="n">image_id_list</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">image_id</span> <span class="ow">in</span> <span class="n">image_id_list</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py train]     processing: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_id</span><span class="p">,))</span>
+                    <span class="n">image_filepath</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">jpegimages_path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.jpg&#39;</span> <span class="o">%</span> <span class="n">image_id</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">image_filepath</span><span class="p">):</span>
+                        <span class="n">manifest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_filepath</span><span class="p">,))</span>
+                        <span class="n">_convert_annotation</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+                        <span class="n">num_images</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py train] Processing config and pretrained weights...&#39;</span><span class="p">)</span>
+        <span class="c1"># Load default config and pretrained weights</span>
+        <span class="n">config_url</span> <span class="o">=</span> <span class="n">CONFIG_URL_DICT</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span>
+        <span class="n">config_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span>
+            <span class="n">config_url</span><span class="p">,</span> <span class="n">appname</span><span class="o">=</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">config_template_str</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="n">config_filename</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s1">&#39;.template.&#39;</span><span class="p">,</span> <span class="s1">&#39;.</span><span class="si">%d</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">class_list</span><span class="p">),)</span>
+        <span class="p">)</span>
+        <span class="n">config_filepath</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">weights_path</span><span class="p">,</span> <span class="n">config_filename</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">replace_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="s1">&#39;_^_OUTPUT_^_&#39;</span><span class="p">,</span> <span class="n">SIDES</span> <span class="o">*</span> <span class="n">SIDES</span> <span class="o">*</span> <span class="p">(</span><span class="n">BOXES</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_list</span><span class="p">))),</span>
+                <span class="p">(</span><span class="s1">&#39;_^_CLASSES_^_&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_list</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s1">&#39;_^_SIDES_^_&#39;</span><span class="p">,</span> <span class="n">SIDES</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;_^_BOXES_^_&#39;</span><span class="p">,</span> <span class="n">BOXES</span><span class="p">),</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">needle</span><span class="p">,</span> <span class="n">replacement</span> <span class="ow">in</span> <span class="n">replace_list</span><span class="p">:</span>
+                <span class="n">config_template_str</span> <span class="o">=</span> <span class="n">config_template_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="n">needle</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">replacement</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config_template_str</span><span class="p">)</span>
+
+        <span class="n">classes_filepath</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.classes&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">config_filepath</span><span class="p">,)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">class_file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">class_list</span><span class="p">:</span>
+                <span class="n">class_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">class_</span><span class="p">,))</span>
+
+        <span class="n">config_url</span> <span class="o">=</span> <span class="n">CONFIG_URL_DICT</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span>
+        <span class="n">weights_url</span> <span class="o">=</span> <span class="n">_parse_weights_from_cfg</span><span class="p">(</span><span class="n">config_url</span><span class="p">)</span>
+        <span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span>
+            <span class="n">weights_url</span><span class="p">,</span> <span class="n">appname</span><span class="o">=</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">dark</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">,</span> <span class="n">weights_filepath</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;class_list = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">class_list</span><span class="p">,))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;num_images = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_images</span><span class="p">,))</span>
+
+        <span class="k">return</span> <span class="n">manifest_filename</span><span class="p">,</span> <span class="n">num_images</span><span class="p">,</span> <span class="n">config_filepath</span><span class="p">,</span> <span class="n">classes_filepath</span>
+
+<div class="viewcode-block" id="Darknet_YOLO_Detector.train"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">voc_path</span><span class="p">,</span> <span class="n">weights_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train a new forest with the given positive chips and negative chips.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            train_pos_chip_path_list (list of str): list of positive training chips</span>
+<span class="sd">            train_neg_chip_path_list (list of str): list of negative training chips</span>
+<span class="sd">            trees_path (str): string path of where the newly trained trees are to be saved</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">            chips_norm_width (int, optional): Chip normalization width for resizing;</span>
+<span class="sd">                the chip is resized to have a width of chips_norm_width and</span>
+<span class="sd">                whatever resulting height in order to best match the original</span>
+<span class="sd">                aspect ratio; defaults to 128</span>
+
+<span class="sd">                If both chips_norm_width and chips_norm_height are specified,</span>
+<span class="sd">                the original aspect ratio of the chip is not respected</span>
+<span class="sd">            chips_norm_height (int, optional): Chip normalization height for resizing;</span>
+<span class="sd">                the chip is resized to have a height of chips_norm_height and</span>
+<span class="sd">                whatever resulting width in order to best match the original</span>
+<span class="sd">                aspect ratio; defaults to None</span>
+
+<span class="sd">                If both chips_norm_width and chips_norm_height are specified,</span>
+<span class="sd">                the original aspect ratio of the chip is not respected</span>
+<span class="sd">            verbose (bool, optional): verbose flag; defaults to object&#39;s verbose or</span>
+<span class="sd">                selectively enabled for this function</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Default values</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">odict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s1">&#39;weights_filepath&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># This value always gets overwritten</span>
+                <span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="n">dark</span><span class="o">.</span><span class="n">verbose</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;quiet&#39;</span><span class="p">,</span> <span class="n">dark</span><span class="o">.</span><span class="n">quiet</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># params.update(kwargs)</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">update_existing</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Make the tree path absolute</span>
+        <span class="n">weights_path</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">weights_path</span><span class="p">)</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">ensuredir</span><span class="p">(</span><span class="n">weights_path</span><span class="p">)</span>
+
+        <span class="c1"># Setup training files and folder structures</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">dark</span><span class="o">.</span><span class="n">_train_setup</span><span class="p">(</span><span class="n">voc_path</span><span class="p">,</span> <span class="n">weights_path</span><span class="p">)</span>
+        <span class="n">manifest_filename</span><span class="p">,</span> <span class="n">num_images</span><span class="p">,</span> <span class="n">config_filepath</span><span class="p">,</span> <span class="n">classes_filepath</span> <span class="o">=</span> <span class="n">results</span>
+
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span><span class="p">:</span>
+            <span class="n">manifest_filename</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">manifest_filename</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">weights_path</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">weights_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Run training algorithm</span>
+        <span class="n">params_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">dark</span><span class="o">.</span><span class="n">net</span><span class="p">,</span> <span class="n">manifest_filename</span><span class="p">,</span> <span class="n">weights_path</span><span class="p">,</span> <span class="n">num_images</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">DARKNET_CLIB</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">*</span><span class="n">params_list</span><span class="p">)</span>
+        <span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;weights_filepath&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;quiet&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">[pydarknet py] *************************************&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py] Training Completed&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[pydarknet py] Weight file saved to: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">weights_filepath</span><span class="p">,))</span>
+        <span class="k">return</span> <span class="n">weights_filepath</span><span class="p">,</span> <span class="n">config_filepath</span><span class="p">,</span> <span class="n">classes_filepath</span></div>
+
+<div class="viewcode-block" id="Darknet_YOLO_Detector.detect"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">input_gpath_list</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run detection with a given loaded forest on a list of images</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_gpath_list (list of str): the list of image paths that you want</span>
+<span class="sd">                to test</span>
+<span class="sd">            config_filepath (str, optional): the network definition for YOLO to use</span>
+<span class="sd">            weights_filepath (str, optional): the network weights for YOLO to use</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">            sensitivity (float, optional): the sensitivity of the detector, which</span>
+<span class="sd">                accepts a value between 0.0 and 1.0; defaults to 0.0</span>
+<span class="sd">            batch_size (int, optional): the number of images to test at a single</span>
+<span class="sd">                time in paralell (if None, the number of CPUs is used); defaults to</span>
+<span class="sd">                None</span>
+<span class="sd">            verbose (bool, optional): verbose flag; defaults to object&#39;s verbose or</span>
+<span class="sd">                selectively enabled for this function</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            (str, (list of dict)): tuple of the input image path and a list</span>
+<span class="sd">                of dictionaries specifying the detected bounding boxes</span>
+
+<span class="sd">                The dictionaries returned by this function are of the form:</span>
+<span class="sd">                    xtl (int): the top left x position of the bounding box</span>
+<span class="sd">                    ytl (int): the top left y position of the bounding box</span>
+<span class="sd">                    width (int): the width of the bounding box</span>
+<span class="sd">                    height (int): the hiehgt of the bounding box</span>
+<span class="sd">                    class (str): the most probably class detected by the network</span>
+<span class="sd">                    confidence (float): the confidence that this bounding box is of</span>
+<span class="sd">                        the class specified by the trees used during testing</span>
+
+<span class="sd">        CommandLine:</span>
+<span class="sd">            python -m pydarknet._pydarknet detect --show</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # DISABLE_DOCTEST</span>
+<span class="sd">            &gt;&gt;&gt; from pydarknet._pydarknet import *  # NOQA</span>
+<span class="sd">            &gt;&gt;&gt; dpath = &#39;/media/raid/work/WS_ALL/localizer_backup/&#39;</span>
+<span class="sd">            &gt;&gt;&gt; weights_filepath = join(dpath, &#39;detect.yolo.2.39000.weights&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; config_filepath = join(dpath, &#39;detect.yolo.2.cfg&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; dark = Darknet_YOLO_Detector(config_filepath=config_filepath,</span>
+<span class="sd">            &gt;&gt;&gt;                              weights_filepath=weights_filepath)</span>
+<span class="sd">            &gt;&gt;&gt; input_gpath_list = [u&#39;/media/raid/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; kwargs = {}</span>
+<span class="sd">            &gt;&gt;&gt; (input_gpath, result_list_) = dark.detect(input_gpath_list)</span>
+<span class="sd">            &gt;&gt;&gt; result = (&#39;(input_gpath, result_list_) = %s&#39; % (ut.repr2((input_gpath, result_list_)),))</span>
+<span class="sd">            &gt;&gt;&gt; print(result)</span>
+<span class="sd">            &gt;&gt;&gt; ut.quit_if_noshow()</span>
+<span class="sd">            &gt;&gt;&gt; import wbia.plottool as pt</span>
+<span class="sd">            &gt;&gt;&gt; ut.show_if_requested()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Default values</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">odict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s1">&#39;batch_size&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;class_list&#39;</span><span class="p">,</span> <span class="n">dark</span><span class="o">.</span><span class="n">class_list</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;sensitivity&#39;</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;grid&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;results_array&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># This value always gets overwritten</span>
+                <span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="n">dark</span><span class="o">.</span><span class="n">verbose</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;quiet&#39;</span><span class="p">,</span> <span class="n">dark</span><span class="o">.</span><span class="n">quiet</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># params.update(kwargs)</span>
+        <span class="n">ut</span><span class="o">.</span><span class="n">update_existing</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">class_list</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;class_list&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;grid&#39;</span><span class="p">]:</span>
+            <span class="n">_update_globals</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">class_list</span><span class="o">=</span><span class="n">class_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_update_globals</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">class_list</span><span class="o">=</span><span class="n">class_list</span><span class="p">)</span>
+
+        <span class="c1"># Try to determine the parallel processing batch size</span>
+        <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># try:</span>
+            <span class="c1">#     cpu_count = multiprocessing.cpu_count()</span>
+            <span class="c1">#     if not params[&#39;quiet&#39;]:</span>
+            <span class="c1">#         print(&#39;[pydarknet py] Detecting with %d CPUs&#39; % (cpu_count, ))</span>
+            <span class="c1">#     params[&#39;batch_size&#39;] = cpu_count</span>
+            <span class="c1"># except Exception:</span>
+            <span class="c1">#     params[&#39;batch_size&#39;] = 128</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">32</span>
+
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">])</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;quiet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;quiet&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Data integrity</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sensitivity&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sensitivity&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">1.0</span>
+        <span class="p">),</span> <span class="s1">&#39;Threshold must be in the range [0, 1].&#39;</span>
+
+        <span class="c1"># Run training algorithm</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span>  <span class="c1"># Remove this value from params</span>
+        <span class="n">batch_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)))</span>
+        <span class="c1"># Detect for each batch</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">ut</span><span class="o">.</span><span class="n">ProgIter</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span><span class="n">batch_num</span><span class="p">),</span> <span class="n">lbl</span><span class="o">=</span><span class="s1">&#39;[pydarknet py]&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">invert_rate</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">):</span>
+            <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">batch</span> <span class="o">*</span> <span class="n">batch_size</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">batch_size</span>
+            <span class="k">if</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">):</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">)</span>
+            <span class="n">input_gpath_list_</span> <span class="o">=</span> <span class="n">input_gpath_list</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+            <span class="n">num_images</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_gpath_list_</span><span class="p">)</span>
+            <span class="c1"># Final sanity check</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;results_array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_images</span> <span class="o">*</span> <span class="n">RESULT_LENGTH</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">C_FLOAT</span><span class="p">)</span>
+            <span class="c1"># Make the params_list</span>
+            <span class="n">params_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">dark</span><span class="o">.</span><span class="n">net</span><span class="p">,</span>
+                <span class="n">_cast_list_to_c</span><span class="p">(</span><span class="n">ensure_bytes_strings</span><span class="p">(</span><span class="n">input_gpath_list_</span><span class="p">),</span> <span class="n">C_CHAR</span><span class="p">),</span>
+                <span class="n">num_images</span><span class="p">,</span>
+            <span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">DARKNET_CLIB</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="o">*</span><span class="n">params_list</span><span class="p">)</span>
+            <span class="n">results_list</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;results_array&#39;</span><span class="p">]</span>
+            <span class="n">conclude</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">results_list</span> <span class="o">=</span> <span class="n">results_list</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;quiet&#39;</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;[pydarknet py] Took </span><span class="si">%r</span><span class="s1"> seconds to compute </span><span class="si">%d</span><span class="s1"> images&#39;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">conclude</span> <span class="o">-</span> <span class="n">begin</span><span class="p">,</span> <span class="n">num_images</span><span class="p">,)</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">input_gpath</span><span class="p">,</span> <span class="n">result_list</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_gpath_list_</span><span class="p">,</span> <span class="n">results_list</span><span class="p">):</span>
+                <span class="n">probs_list</span><span class="p">,</span> <span class="n">bbox_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">result_list</span><span class="p">,</span> <span class="p">[</span><span class="n">PROB_RESULT_LENGTH</span><span class="p">])</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">probs_list</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">PROB_RESULT_LENGTH</span>
+                    <span class="ow">and</span> <span class="n">bbox_list</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">BBOX_RESULT_LENGTH</span>
+                <span class="p">)</span>
+                <span class="n">probs_list</span> <span class="o">=</span> <span class="n">probs_list</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_list</span><span class="p">)))</span>
+                <span class="n">bbox_list</span> <span class="o">=</span> <span class="n">bbox_list</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+                <span class="n">result_list_</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">prob_list</span><span class="p">,</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">probs_list</span><span class="p">,</span> <span class="n">bbox_list</span><span class="p">):</span>
+                    <span class="n">class_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">prob_list</span><span class="p">)</span>
+                    <span class="n">class_label</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">class_list</span><span class="p">[</span><span class="n">class_index</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">class_index</span>
+                        <span class="k">else</span> <span class="n">DEFAULT_CLASS</span>
+                    <span class="p">)</span>
+                    <span class="n">class_confidence</span> <span class="o">=</span> <span class="n">prob_list</span><span class="p">[</span><span class="n">class_index</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">class_confidence</span> <span class="o">&lt;</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;sensitivity&#39;</span><span class="p">]:</span>
+                        <span class="k">continue</span>
+                    <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;xtl&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span>
+                        <span class="s1">&#39;ytl&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+                        <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])),</span>
+                        <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">])),</span>
+                        <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="n">class_label</span><span class="p">,</span>
+                        <span class="s1">&#39;confidence&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">class_confidence</span><span class="p">),</span>
+                    <span class="p">}</span>
+                    <span class="n">result_list_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result_dict</span><span class="p">)</span>
+
+                <span class="k">yield</span> <span class="p">(</span><span class="n">input_gpath</span><span class="p">,</span> <span class="n">result_list_</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;results_array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="c1"># Pickle functions</span>
+    <span class="c1"># TODO: Just use __getstate__ and __setstate__ instead</span>
+<div class="viewcode-block" id="Darknet_YOLO_Detector.dump"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; UNIMPLEMENTED &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Darknet_YOLO_Detector.dumps"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector.dumps">[docs]</a>    <span class="k">def</span> <span class="nf">dumps</span><span class="p">(</span><span class="n">dark</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; UNIMPLEMENTED &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Darknet_YOLO_Detector.load"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; UNIMPLEMENTED &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Darknet_YOLO_Detector.loads"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.Darknet_YOLO_Detector.loads">[docs]</a>    <span class="k">def</span> <span class="nf">loads</span><span class="p">(</span><span class="n">dark</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; UNIMPLEMENTED &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="test_pydarknet"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.test_pydarknet">[docs]</a><span class="k">def</span> <span class="nf">test_pydarknet</span><span class="p">():</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    CommandLine:</span>
+<span class="sd">        python -m pydarknet._pydarknet --exec-test_pydarknet --show</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # ENABLE_DOCTEST</span>
+<span class="sd">        &gt;&gt;&gt; from pydarknet._pydarknet import *  # NOQA</span>
+<span class="sd">        &gt;&gt;&gt; test_pydarknet()</span>
+<span class="sd">        &gt;&gt;&gt; ut.quit_if_noshow()</span>
+<span class="sd">        &gt;&gt;&gt; ut.show_if_requested()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dark</span> <span class="o">=</span> <span class="n">Darknet_YOLO_Detector</span><span class="p">()</span>
+    <span class="c1"># TODO: move test images out of the repo. Grab them via utool</span>
+    <span class="kn">import</span> <span class="nn">pydarknet</span>
+    <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">dirname</span>
+
+    <span class="n">pydarknet_repo</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">get_module_dir</span><span class="p">(</span><span class="n">pydarknet</span><span class="p">))</span>
+    <span class="n">input_gpath_list</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">ls_images</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">pydarknet_repo</span><span class="p">,</span> <span class="s1">&#39;_test&#39;</span><span class="p">),</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># input_gpath_list = [</span>
+    <span class="c1">#    abspath(join(&#39;_test&#39;, &#39;test_%05d.jpg&#39; % (i, )))</span>
+    <span class="c1">#    for i in range(1, 76)</span>
+    <span class="c1"># ]</span>
+    <span class="n">input_gpath_list</span> <span class="o">=</span> <span class="n">input_gpath_list</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+
+    <span class="n">results_list</span> <span class="o">=</span> <span class="n">dark</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">result_list</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">results_list</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">result_list</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Found: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">result</span><span class="p">,))</span>
+
+    <span class="k">del</span> <span class="n">dark</span></div>
+
+
+<div class="viewcode-block" id="test_pydarknet2"><a class="viewcode-back" href="../../pydarknet.html#pydarknet._pydarknet.test_pydarknet2">[docs]</a><span class="k">def</span> <span class="nf">test_pydarknet2</span><span class="p">(</span>
+    <span class="n">input_gpath_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">config_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">classes_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    CommandLine:</span>
+<span class="sd">        python -m pydarknet._pydarknet test_pydarknet2 --show</span>
+
+<span class="sd">        python -m pydarknet test_pydarknet2 --show \</span>
+<span class="sd">            --input_gpath_list=[&quot;~/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg&quot;] \</span>
+<span class="sd">            --config_filepath=&quot;~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg&quot; \</span>
+<span class="sd">            --weights_filepath=&quot;~/work/WS_ALL/localizer_backup/detect.yolo.2.39000.weights&quot; \</span>
+<span class="sd">            --classes_filepath=&quot;~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg.classes&quot;</span>
+
+<span class="sd">    Ignore:</span>
+<span class="sd">        &gt;&gt;&gt; # Load in the second command line strings for faster testing</span>
+<span class="sd">        &gt;&gt;&gt; from pydarknet._pydarknet import *  # NOQA</span>
+<span class="sd">        &gt;&gt;&gt; cmdstr = ut.get_func_docblocks(test_pydarknet2)[&#39;CommandLine:&#39;].split(&#39;\n\n&#39;)[1]</span>
+<span class="sd">        &gt;&gt;&gt; ut.aug_sysargv(cmdstr)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # DISABLE_DOCTEST</span>
+<span class="sd">        &gt;&gt;&gt; from pydarknet._pydarknet import *  # NOQA</span>
+<span class="sd">        &gt;&gt;&gt; funckw = ut.argparse_funckw(test_pydarknet2)</span>
+<span class="sd">        &gt;&gt;&gt; exec(ut.execstr_dict(funckw), globals())</span>
+<span class="sd">        &gt;&gt;&gt; output_fpaths = test_pydarknet2(**funckw)</span>
+<span class="sd">        &gt;&gt;&gt; ut.quit_if_noshow()</span>
+<span class="sd">        &gt;&gt;&gt; import wbia.plottool as pt</span>
+<span class="sd">        &gt;&gt;&gt; inter = pt.MultiImageInteraction(output_fpaths)</span>
+<span class="sd">        &gt;&gt;&gt; inter.start()</span>
+<span class="sd">        &gt;&gt;&gt; ut.show_if_requested()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">pydarknet</span>
+    <span class="kn">import</span> <span class="nn">cv2</span>
+    <span class="kn">from</span> <span class="nn">pydarknet</span> <span class="k">import</span> <span class="n">Darknet_YOLO_Detector</span>
+    <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">dirname</span>
+
+    <span class="k">if</span> <span class="n">config_filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">test_config_url</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg&#39;</span>
+        <span class="p">)</span>
+        <span class="n">config_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span><span class="n">test_config_url</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">weights_filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">test_weights_url</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;https://wildbookiarepository.azureedge.net/models/detect.yolo.12.weights&#39;</span>
+        <span class="p">)</span>
+        <span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">grab_file_url</span><span class="p">(</span><span class="n">test_weights_url</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">classes_filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">input_gpath_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pydarknet_repo</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">get_module_dir</span><span class="p">(</span><span class="n">pydarknet</span><span class="p">))</span>
+        <span class="n">input_gpath_list</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">ls_images</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">pydarknet_repo</span><span class="p">,</span> <span class="s1">&#39;_test&#39;</span><span class="p">),</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">input_gpath_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">gpath</span><span class="p">)</span> <span class="k">for</span> <span class="n">gpath</span> <span class="ow">in</span> <span class="n">input_gpath_list</span><span class="p">]</span>
+    <span class="n">config_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span>
+    <span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">)</span>
+    <span class="n">classes_filepath</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">truepath</span><span class="p">(</span><span class="n">classes_filepath</span><span class="p">)</span>
+
+    <span class="n">dark</span> <span class="o">=</span> <span class="n">Darknet_YOLO_Detector</span><span class="p">(</span>
+        <span class="n">config_filepath</span><span class="o">=</span><span class="n">config_filepath</span><span class="p">,</span>
+        <span class="n">weights_filepath</span><span class="o">=</span><span class="n">weights_filepath</span><span class="p">,</span>
+        <span class="n">classes_filepath</span><span class="o">=</span><span class="n">classes_filepath</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">temp_path</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">ensure_app_resource_dir</span><span class="p">(</span><span class="s1">&#39;pydarknet&#39;</span><span class="p">,</span> <span class="s1">&#39;temp&#39;</span><span class="p">)</span>
+    <span class="n">ut</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
+    <span class="n">ut</span><span class="o">.</span><span class="n">ensuredir</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
+
+    <span class="n">results_list1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dark</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+    <span class="n">results_list2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dark</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="n">zipped</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results_list1</span><span class="p">,</span> <span class="n">results_list2</span><span class="p">)</span>
+    <span class="n">output_fpaths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">result_list1</span><span class="p">),</span> <span class="p">(</span><span class="n">filename2</span><span class="p">,</span> <span class="n">result_list2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">zipped</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">result_list1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Found 1: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">result</span><span class="p">,))</span>
+            <span class="n">xtl</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;xtl&#39;</span><span class="p">])</span>
+            <span class="n">ytl</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ytl&#39;</span><span class="p">])</span>
+            <span class="n">xbr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;xtl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">])</span>
+            <span class="n">ybr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ytl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">])</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">xtl</span><span class="p">,</span> <span class="n">ytl</span><span class="p">),</span> <span class="p">(</span><span class="n">xbr</span><span class="p">,</span> <span class="n">ybr</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">result_list2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Found 2: </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">result</span><span class="p">,))</span>
+            <span class="n">xtl</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;xtl&#39;</span><span class="p">])</span>
+            <span class="n">ytl</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ytl&#39;</span><span class="p">])</span>
+            <span class="n">xbr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;xtl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">])</span>
+            <span class="n">ybr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ytl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">])</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">xtl</span><span class="p">,</span> <span class="n">ytl</span><span class="p">),</span> <span class="p">(</span><span class="n">xbr</span><span class="p">,</span> <span class="n">ybr</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">result_list1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.2</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">xtl</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;xtl&#39;</span><span class="p">])</span>
+            <span class="n">ytl</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ytl&#39;</span><span class="p">])</span>
+            <span class="n">xbr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;xtl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">])</span>
+            <span class="n">ybr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ytl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">])</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">xtl</span><span class="p">,</span> <span class="n">ytl</span><span class="p">),</span> <span class="p">(</span><span class="n">xbr</span><span class="p">,</span> <span class="n">ybr</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">temp_filepath</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">temp_filepath</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+        <span class="n">output_fpaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_filepath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output_fpaths</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    CommandLine:</span>
+<span class="sd">        python -m pydarknet._pydarknet</span>
+<span class="sd">        python -m pydarknet._pydarknet --allexamples</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+    <span class="n">multiprocessing</span><span class="o">.</span><span class="n">freeze_support</span><span class="p">()</span>  <span class="c1"># for win32</span>
+    <span class="kn">import</span> <span class="nn">utool</span> <span class="k">as</span> <span class="nn">ut</span>  <span class="c1"># NOQA</span>
+
+    <span class="n">ut</span><span class="o">.</span><span class="n">doctest_funcs</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">wbia-pydarknet</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pydarknet.html">pydarknet package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Wild Me.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
