@@ -6,6 +6,7 @@
 
 #ifdef OPENCV
 #include "opencv2/highgui/highgui_c.h"
+#include "opencv2/imgcodecs/imgcodecs_c.h"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -775,7 +776,6 @@ image ipl_to_image(IplImage* src)
 
 image load_image_cv(char *filename, int channels)
 {
-    IplImage* src = 0;
     int flag = -1;
     if (channels == 0) flag = -1;
     else if (channels == 1) flag = 0;
@@ -784,11 +784,13 @@ image load_image_cv(char *filename, int channels)
         fprintf(stderr, "OpenCV can't force load with %d channels\n", channels);
     }
 
-    if( (src = cvLoadImage(filename, flag)) == 0 )
+    IplImage* src = cvLoadImage(filename, flag);
+    if(!src)
     {
         printf("Cannot load image \"%s\"\n", filename);
         exit(0);
     }
+
     image out = ipl_to_image(src);
     cvReleaseImage(&src);
     rgbgr_image(out);
@@ -829,7 +831,6 @@ image load_image(char *filename, int w, int h, int c)
 #else
     image out = load_image_stb(filename, c);
 #endif
-
     if((h && w) && (h != out.h || w != out.w)){
         image resized = resize_image(out, w, h);
         free_image(out);

@@ -239,7 +239,6 @@ KWARGS = OrderedDict(
         '-DBUILD_TESTS=OFF',
         '-DBUILD_DOC=OFF',
         '-DCMAKE_BUILD_TYPE=Release',
-        '-DBUILD_C_BINDINGS=ON',
         '-DBUILD_EXAMPLES=OFF',
         '-DBUILD_TESTS=OFF',
         '-DBUILD_DOC=OFF',

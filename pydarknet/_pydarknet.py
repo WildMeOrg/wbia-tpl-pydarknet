@@ -659,9 +659,9 @@ def test_pydarknet():
     from os.path import dirname
 
     pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
-    input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
+    input_gpath_list = ut.ls_images(join(pydarknet_repo, 'tests'), full=True)
     # input_gpath_list = [
-    #    abspath(join('_test', 'test_%05d.jpg' % (i, )))
+    #    abspath(join('tests', 'test_%05d.jpg' % (i, )))
     #    for i in range(1, 76)
     # ]
     input_gpath_list = input_gpath_list[:5]
@@ -730,7 +730,7 @@ def test_pydarknet2(
 
     if input_gpath_list is None:
         pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
-        input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
+        input_gpath_list = ut.ls_images(join(pydarknet_repo, 'tests'), full=True)
 
     input_gpath_list = [ut.truepath(gpath) for gpath in input_gpath_list]
     config_filepath = ut.truepath(config_filepath)

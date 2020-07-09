@@ -167,7 +167,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "MSVC" OR CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   add_definitions(
     "/W1 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS /bigobj")
 else()
-  add_definitions("-Wall -O2 -Wno-unknown-pragmas -Wno-unused-function")
+  add_definitions("-O3 -g -Wall -Wno-unknown-pragmas -Wno-unused-function")
 endif()
 
 # install and export variables

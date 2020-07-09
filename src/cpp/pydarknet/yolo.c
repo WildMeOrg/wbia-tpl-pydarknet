@@ -432,6 +432,11 @@ void convert_yolo_detections(float *predictions, int classes, int num, int squar
 
 void test_yolo_results(network *net, char *filename, float sensitivity, int grid, float* results, int result_index, int verbose, int quiet)
 {
+    if(verbose)
+    {
+        printf("\n[pydarknet c] Preparing network");
+    }
+
     detection_layer l = net->layers[net->n-1];
     set_batch_network(net, 1);
     srand(2222222);
@@ -451,6 +456,11 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
 
     strncpy(input, filename, 256);
 
+    if(verbose)
+    {
+        printf("\n[pydarknet c] Preparing image %s", input);
+    }
+
     int super_w = (int) net->w * (5.0 / 3.0) + 1;
     int super_h = (int) net->h * (5.0 / 3.0) + 1;
     image im = load_image_color(input,0,0);
@@ -463,6 +473,11 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
 
     image sized = resize_image(sized_super, net->w, net->h);
     X = sized.data;
+
+    if(verbose)
+    {
+        printf("\n[pydarknet c] Predicting on %s", input);
+    }
     predictions = network_predict(*net, X);
     offset = 0;
     convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, sensitivity, probs, boxes, 0, offset, 0, 0, 1.0);
