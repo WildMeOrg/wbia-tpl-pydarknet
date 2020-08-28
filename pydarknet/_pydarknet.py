@@ -171,9 +171,12 @@ def _parse_class_list(classes_filepath):
 
 # =================================
 # Load Dynamic Library
-# =================================
-_update_globals(verbose=False, num_classes_override=1)
-DARKNET_CLIB, CFUNC = _load_c_shared_library(METHODS, device=DEVICE)
+#=================================
+try:
+    _update_globals(verbose=False, num_classes_override=1)
+except AssertionError:
+    pass
+DARKNET_CLIB = _load_c_shared_library(METHODS, device=DEVICE)
 
 
 # =================================
