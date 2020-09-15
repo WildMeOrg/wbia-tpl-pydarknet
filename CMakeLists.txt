@@ -47,8 +47,6 @@ if(OS_IS_MACOS)
   include_directories(/opt/local/include)
   link_directories(/opt/local/lib)
 
-  find_package(Eigen3 3 REQUIRED NO_MODULE)
-
   set(CMAKE_INSTALL_RPATH "/opt/local/lib")
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
@@ -56,6 +54,13 @@ if(OS_IS_MACOS)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 endif()
+
+message("-- CMAKE_SYSTEM_INFO_FILE: ${CMAKE_SYSTEM_INFO_FILE}")
+message("-- CMAKE_SYSTEM_NAME:      ${CMAKE_SYSTEM_NAME}")
+message("-- CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+message("-- CMAKE_SYSTEM:           ${CMAKE_SYSTEM}")
+
+find_package(Eigen3 3 REQUIRED NO_MODULE)
 
 # Setup basic python stuff and ensure we have skbuild list(INSERT
 # CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake") include( skbuild-helpers )
