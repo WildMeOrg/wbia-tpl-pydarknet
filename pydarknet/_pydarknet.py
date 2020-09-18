@@ -176,7 +176,7 @@ try:
     _update_globals(verbose=False, num_classes_override=1)
 except AssertionError:
     pass
-DARKNET_CLIB = _load_c_shared_library(METHODS, device=DEVICE)
+DARKNET_CLIB, DARKNET_CFUNC = _load_c_shared_library(METHODS, device=DEVICE)
 
 
 # =================================
