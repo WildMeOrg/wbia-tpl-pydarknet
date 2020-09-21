@@ -145,7 +145,6 @@ if(BUILD_CUDA_LIB)
   find_package(CUDA)
   if(CUDA_FOUND)
     enable_language(CUDA)
-    add_definitions(-DGPU)
     message(
       STATUS
         "CUDA found (include: ${CUDA_INCLUDE_DIRS}, lib: ${CUDA_LIBRARIES})")

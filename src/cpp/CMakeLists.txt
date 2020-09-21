@@ -52,8 +52,8 @@ if(BUILD_CUDA_LIB)
     pydarknet_cuda_s ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${CUDA_LIBRARIES}
     ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY})
 
-  set_property(TARGET pydarknet_cuda_s PROPERTY COMPILE_DEFINITIONS
-                                                PYDARKNET_STATIC)
+  target_compile_definitions(pydarknet_cuda_s PRIVATE GPU PYDARKNET_STATIC)
+
   if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
     set_target_properties(pydarknet_cuda_s PROPERTIES COMPILE_FLAGS -fPIC)
   endif()
