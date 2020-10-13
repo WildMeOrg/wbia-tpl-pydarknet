@@ -3,11 +3,15 @@
 # Python Interface
 # ============================
 from __future__ import absolute_import, division, print_function
+import logging
 from os.path import join, realpath, dirname
 import numpy as np
 import ctypes as C
 import sys
 from pydarknet import ctypes_interface
+
+
+logger = logging.getLogger('pydarknet')
 
 
 def ensure_bytes_strings(str_list):
@@ -80,7 +84,7 @@ def _find_c_shared_library_by_device(device='cpu'):
         darknet_clib, def_cfunc = ctypes_interface.load_clib(libname, root_dir)
     except ImportError:
         if device not in ['cpu']:
-            print('[pydarknet] CPU fallback for: %s' % (libname,))
+            logging.info('CPU fallback for: %s' % (libname,))
             darknet_clib, def_cfunc = _find_c_shared_library_by_device()
         else:
             raise RuntimeError('Could not load library')
