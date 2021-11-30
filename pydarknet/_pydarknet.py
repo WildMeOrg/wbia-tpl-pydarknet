@@ -18,7 +18,8 @@ from pydarknet.pydarknet_helpers import (
 VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK = ut.get_argflag('--quietdark') or ut.QUIET
 
-DEVICE = 'cpu' if ut.get_argflag('--cpudark') else 'gpu'
+# DEVICE = 'cpu' if ut.get_argflag('--cpudark') else 'gpu'
+DEVICE = 'cpu'
 assert DEVICE in ['cpu', 'gpu']
 
 
