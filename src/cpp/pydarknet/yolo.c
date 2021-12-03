@@ -658,8 +658,8 @@ void run_yolo(int argc, char **argv)
     //     voc_labels[i] = load_image_color(buff, 0, 0);
     // }
 
-    float thresh = find_float_arg(argc, argv, "-thresh", .2);
-    int cam_index = find_int_arg(argc, argv, "-c", 0);
+    // float thresh = find_float_arg(argc, argv, "-thresh", .2);
+    // int cam_index = find_int_arg(argc, argv, "-c", 0);
     if(argc < 4){
         fprintf(stderr, "usage: %s %s [train/test/valid] [cfg] [weights (optional)]\n", argv[0], argv[1]);
         return;
@@ -667,7 +667,7 @@ void run_yolo(int argc, char **argv)
 
     char *cfg = argv[3];
     char *weights = (argc > 4) ? argv[4] : 0;
-    char *filename = (argc > 5) ? argv[5]: 0;
+    // char *filename = (argc > 5) ? argv[5]: 0;
     // if(0==strcmp(argv[2], "test")) test_yolo(cfg, weights, filename, thresh);
     // else if(0==strcmp(argv[2], "train")) train_yolo(cfg, weights);
     // else if(0==strcmp(argv[2], "valid")) validate_yolo(cfg, weights);
