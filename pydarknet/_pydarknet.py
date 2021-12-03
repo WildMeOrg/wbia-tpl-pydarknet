@@ -138,7 +138,13 @@ def _update_globals(grid=GRID, class_list=None, verbose=True, num_classes_overri
             )
             class_list = _parse_class_list(classes_filepath)
         if verbose:
-            print('UPDATING GLOBALS: %r, %r' % (grid, class_list,))
+            print(
+                'UPDATING GLOBALS: %r, %r'
+                % (
+                    grid,
+                    class_list,
+                )
+            )
 
         num_classes = len(class_list)
     else:
@@ -172,7 +178,7 @@ def _parse_class_list(classes_filepath):
 
 # =================================
 # Load Dynamic Library
-#=================================
+# =================================
 try:
     _update_globals(verbose=False, num_classes_override=1)
 except AssertionError:
@@ -193,13 +199,13 @@ class Darknet_YOLO_Detector(object):
         quiet=QUIET_DARK,
     ):
         """
-            Create the C object for the PyDarknet YOLO detector.
+        Create the C object for the PyDarknet YOLO detector.
 
-            Args:
-                verbose (bool, optional): verbose flag; defaults to --verbdark flag
+        Args:
+            verbose (bool, optional): verbose flag; defaults to --verbdark flag
 
-            Returns:
-                detector (object): the Darknet YOLO Detector object
+        Returns:
+            detector (object): the Darknet YOLO Detector object
         """
         if verbose:
             print('[pydarknet py init] config_filepath = %r' % (config_filepath,))
@@ -590,7 +596,10 @@ class Darknet_YOLO_Detector(object):
             if not params['quiet']:
                 print(
                     '[pydarknet py] Took %r seconds to compute %d images'
-                    % (conclude - begin, num_images,)
+                    % (
+                        conclude - begin,
+                        num_images,
+                    )
                 )
             for input_gpath, result_list in zip(input_gpath_list_, results_list):
                 probs_list, bbox_list = np.split(result_list, [PROB_RESULT_LENGTH])
@@ -628,19 +637,19 @@ class Darknet_YOLO_Detector(object):
     # Pickle functions
     # TODO: Just use __getstate__ and __setstate__ instead
     def dump(dark, file):
-        """ UNIMPLEMENTED """
+        """UNIMPLEMENTED"""
         pass
 
     def dumps(dark):
-        """ UNIMPLEMENTED """
+        """UNIMPLEMENTED"""
         pass
 
     def load(dark, file):
-        """ UNIMPLEMENTED """
+        """UNIMPLEMENTED"""
         pass
 
     def loads(dark, string):
-        """ UNIMPLEMENTED """
+        """UNIMPLEMENTED"""
         pass
 
 

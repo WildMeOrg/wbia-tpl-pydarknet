@@ -93,7 +93,7 @@ def _find_c_shared_library_by_device(device='cpu'):
 
 
 def _load_c_shared_library(METHODS, device='cpu'):
-    """ Loads the pydarknet dynamic library and defines its functions """
+    """Loads the pydarknet dynamic library and defines its functions"""
 
     darknet_clib, def_cfunc = _find_c_shared_library_by_device(device=device)
 
