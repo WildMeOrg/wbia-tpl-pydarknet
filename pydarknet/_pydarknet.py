@@ -480,31 +480,31 @@ class Darknet_YOLO_Detector(object):
 
         Args:
             input_gpath_list (list of str): the list of image paths that you want
-                to test
+            to test
             config_filepath (str, optional): the network definition for YOLO to use
             weights_filepath (str, optional): the network weights for YOLO to use
 
         Kwargs:
             sensitivity (float, optional): the sensitivity of the detector, which
-                accepts a value between 0.0 and 1.0; defaults to 0.0
+            accepts a value between 0.0 and 1.0; defaults to 0.0
             batch_size (int, optional): the number of images to test at a single
-                time in paralell (if None, the number of CPUs is used); defaults to
-                None
+            time in paralell (if None, the number of CPUs is used); defaults to
+            None
             verbose (bool, optional): verbose flag; defaults to object's verbose or
-                selectively enabled for this function
+            selectively enabled for this function
 
         Yields:
             (str, (list of dict)): tuple of the input image path and a list
-                of dictionaries specifying the detected bounding boxes
+            of dictionaries specifying the detected bounding boxes
 
-                The dictionaries returned by this function are of the form:
-                    xtl (int): the top left x position of the bounding box
-                    ytl (int): the top left y position of the bounding box
-                    width (int): the width of the bounding box
-                    height (int): the hiehgt of the bounding box
-                    class (str): the most probably class detected by the network
-                    confidence (float): the confidence that this bounding box is of
-                        the class specified by the trees used during testing
+            The dictionaries returned by this function are of the form:
+                xtl (int): the top left x position of the bounding box
+                ytl (int): the top left y position of the bounding box
+                width (int): the width of the bounding box
+                height (int): the hiehgt of the bounding box
+                class (str): the most probably class detected by the network
+                confidence (float): the confidence that this bounding box is of
+                the class specified by the trees used during testing
 
         CommandLine:
             python -m pydarknet._pydarknet detect --show
