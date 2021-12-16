@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pydarknet package &mdash; wbia-pydarknet 4.0.1.dev2+dirty documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to pydarknet’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> wbia-pydarknet
+          </a>
+              <div class="version">
+                4.0.1.dev2+dirty
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">pydarknet package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pydarknet.__main__">pydarknet.__main__ module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pydarknet._pydarknet">pydarknet._pydarknet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pydarknet.ctypes_interface">pydarknet.ctypes_interface module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pydarknet.pydarknet_helpers">pydarknet.pydarknet_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pydarknet">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">wbia-pydarknet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>pydarknet package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pydarknet.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pydarknet-package">
+<h1>pydarknet package<a class="headerlink" href="#pydarknet-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-pydarknet.__main__">
+<span id="pydarknet-main-module"></span><h2>pydarknet.__main__ module<a class="headerlink" href="#module-pydarknet.__main__" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet.__main__.main">
+<span class="sig-prename descclassname"><span class="pre">pydarknet.__main__.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/__main__.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet.__main__.main" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pydarknet._pydarknet">
+<span id="pydarknet-pydarknet-module"></span><h2>pydarknet._pydarknet module<a class="headerlink" href="#module-pydarknet._pydarknet" title="Permalink to this headline"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.CONFIG_URL_DICT">
+<span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">CONFIG_URL_DICT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'template':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.template.cfg',</span> <span class="pre">'original':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',</span> <span class="pre">'old':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',</span> <span class="pre">'v1':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.5.cfg',</span> <span class="pre">'v2':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.12.cfg',</span> <span class="pre">'v3':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',</span> <span class="pre">'lynx':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.lynx.cfg',</span> <span class="pre">'cheetah':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.cheetah.cfg',</span> <span class="pre">'seaturtle':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea_turtle.cfg',</span> <span class="pre">'sandtiger':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_sandtiger.cfg',</span> <span class="pre">'hammerhead':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.shark_hammerhead.cfg',</span> <span class="pre">'whalefluke':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.cfg',</span> <span class="pre">'whalefluke_v2':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.whale_fluke.v2.cfg',</span> <span class="pre">'sea':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.sea.cfg',</span> <span class="pre">'candidacy':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.candidacy.cfg',</span> <span class="pre">'default':</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg',</span> <span class="pre">None:</span> <span class="pre">'https://wildbookiarepository.azureedge.net/models/detect.yolo.29.cfg'}</span></em><a class="headerlink" href="#pydarknet._pydarknet.CONFIG_URL_DICT" title="Permalink to this definition"></a></dt>
+<dd><p>Bindings for C Variable Types</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.C_ARRAY_CHAR">
+<span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">C_ARRAY_CHAR</span></span><a class="headerlink" href="#pydarknet._pydarknet.C_ARRAY_CHAR" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pydarknet._pydarknet.LP_c_char_p</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.C_ARRAY_FLOAT">
+<span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">C_ARRAY_FLOAT</span></span><a class="headerlink" href="#pydarknet._pydarknet.C_ARRAY_FLOAT" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pydarknet._pydarknet.LP_c_float</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">Darknet_YOLO_Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes_filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector.detect">
+<span class="sig-name descname"><span class="pre">detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_gpath_list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector.detect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector.detect" title="Permalink to this definition"></a></dt>
+<dd><p>Run detection with a given loaded forest on a list of images</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_gpath_list</strong> (<em>list of str</em>) – the list of image paths that you want</p></li>
+<li><p><strong>test</strong> (<em>to</em>) – </p></li>
+<li><p><strong>config_filepath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – the network definition for YOLO to use</p></li>
+<li><p><strong>weights_filepath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – the network weights for YOLO to use</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Kwargs:</dt><dd><p>sensitivity (float, optional): the sensitivity of the detector, which
+accepts a value between 0.0 and 1.0; defaults to 0.0
+batch_size (int, optional): the number of images to test at a single
+time in paralell (if None, the number of CPUs is used); defaults to
+None
+verbose (bool, optional): verbose flag; defaults to object’s verbose or
+selectively enabled for this function</p>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Yields</dt>
+<dd class="field-odd"><p><em>(str, (list of dict))</em> – tuple of the input image path and a list
+of dictionaries specifying the detected bounding boxes</p>
+<dl class="simple">
+<dt>The dictionaries returned by this function are of the form:</dt><dd><p>xtl (int): the top left x position of the bounding box
+ytl (int): the top left y position of the bounding box
+width (int): the width of the bounding box
+height (int): the hiehgt of the bounding box
+class (str): the most probably class detected by the network
+confidence (float): the confidence that this bounding box is of
+the class specified by the trees used during testing</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="simple">
+<dt>CommandLine:</dt><dd><p>python -m pydarknet._pydarknet detect –show</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># DISABLE_DOCTEST</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pydarknet._pydarknet</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># NOQA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dpath</span> <span class="o">=</span> <span class="s1">&#39;/media/raid/work/WS_ALL/localizer_backup/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weights_filepath</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dpath</span><span class="p">,</span> <span class="s1">&#39;detect.yolo.2.39000.weights&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config_filepath</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dpath</span><span class="p">,</span> <span class="s1">&#39;detect.yolo.2.cfg&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dark</span> <span class="o">=</span> <span class="n">Darknet_YOLO_Detector</span><span class="p">(</span><span class="n">config_filepath</span><span class="o">=</span><span class="n">config_filepath</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                             <span class="n">weights_filepath</span><span class="o">=</span><span class="n">weights_filepath</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_gpath_list</span> <span class="o">=</span> <span class="p">[</span><span class="sa">u</span><span class="s1">&#39;/media/raid/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">input_gpath</span><span class="p">,</span> <span class="n">result_list_</span><span class="p">)</span> <span class="o">=</span> <span class="n">dark</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">input_gpath_list</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;(input_gpath, result_list_) = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">repr2</span><span class="p">((</span><span class="n">input_gpath</span><span class="p">,</span> <span class="n">result_list_</span><span class="p">)),))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">quit_if_noshow</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">wbia.plottool</span> <span class="k">as</span> <span class="nn">pt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">show_if_requested</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector.dump">
+<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector.dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector.dump" title="Permalink to this definition"></a></dt>
+<dd><p>UNIMPLEMENTED</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector.dumps">
+<span class="sig-name descname"><span class="pre">dumps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector.dumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector.dumps" title="Permalink to this definition"></a></dt>
+<dd><p>UNIMPLEMENTED</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector.load" title="Permalink to this definition"></a></dt>
+<dd><p>UNIMPLEMENTED</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector.loads">
+<span class="sig-name descname"><span class="pre">loads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector.loads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector.loads" title="Permalink to this definition"></a></dt>
+<dd><p>UNIMPLEMENTED</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.Darknet_YOLO_Detector.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voc_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#Darknet_YOLO_Detector.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.Darknet_YOLO_Detector.train" title="Permalink to this definition"></a></dt>
+<dd><p>Train a new forest with the given positive chips and negative chips.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_pos_chip_path_list</strong> (<em>list of str</em>) – list of positive training chips</p></li>
+<li><p><strong>train_neg_chip_path_list</strong> (<em>list of str</em>) – list of negative training chips</p></li>
+<li><p><strong>trees_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – string path of where the newly trained trees are to be saved</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Kwargs:</dt><dd><dl>
+<dt>chips_norm_width (int, optional): Chip normalization width for resizing;</dt><dd><p>the chip is resized to have a width of chips_norm_width and
+whatever resulting height in order to best match the original
+aspect ratio; defaults to 128</p>
+<p>If both chips_norm_width and chips_norm_height are specified,
+the original aspect ratio of the chip is not respected</p>
+</dd>
+<dt>chips_norm_height (int, optional): Chip normalization height for resizing;</dt><dd><p>the chip is resized to have a height of chips_norm_height and
+whatever resulting width in order to best match the original
+aspect ratio; defaults to None</p>
+<p>If both chips_norm_width and chips_norm_height are specified,
+the original aspect ratio of the chip is not respected</p>
+</dd>
+<dt>verbose (bool, optional): verbose flag; defaults to object’s verbose or</dt><dd><p>selectively enabled for this function</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.RESULTS_ARRAY">
+<span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">RESULTS_ARRAY</span></span><a class="headerlink" href="#pydarknet._pydarknet.RESULTS_ARRAY" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ctypeslib.ndpointer_&lt;u8_1d_ALIGNED_C_CONTIGUOUS_WRITEABLE</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.test_pydarknet">
+<span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">test_pydarknet</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#test_pydarknet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.test_pydarknet" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>CommandLine:</dt><dd><p>python -m pydarknet._pydarknet –exec-test_pydarknet –show</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ENABLE_DOCTEST</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pydarknet._pydarknet</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># NOQA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_pydarknet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">quit_if_noshow</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">show_if_requested</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet._pydarknet.test_pydarknet2">
+<span class="sig-prename descclassname"><span class="pre">pydarknet._pydarknet.</span></span><span class="sig-name descname"><span class="pre">test_pydarknet2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_gpath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes_filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/_pydarknet.html#test_pydarknet2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet._pydarknet.test_pydarknet2" title="Permalink to this definition"></a></dt>
+<dd><dl>
+<dt>CommandLine:</dt><dd><p>python -m pydarknet._pydarknet test_pydarknet2 –show</p>
+<dl class="simple">
+<dt>python -m pydarknet test_pydarknet2 –show </dt><dd><p>–input_gpath_list=[“~/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg”] –config_filepath=”~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg” –weights_filepath=”~/work/WS_ALL/localizer_backup/detect.yolo.2.39000.weights” –classes_filepath=”~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg.classes”</p>
+</dd>
+</dl>
+</dd>
+<dt>Ignore:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load in the second command line strings for faster testing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pydarknet._pydarknet</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># NOQA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmdstr</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">get_func_docblocks</span><span class="p">(</span><span class="n">test_pydarknet2</span><span class="p">)[</span><span class="s1">&#39;CommandLine:&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">aug_sysargv</span><span class="p">(</span><span class="n">cmdstr</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># DISABLE_DOCTEST</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pydarknet._pydarknet</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># NOQA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funckw</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">argparse_funckw</span><span class="p">(</span><span class="n">test_pydarknet2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exec</span><span class="p">(</span><span class="n">ut</span><span class="o">.</span><span class="n">execstr_dict</span><span class="p">(</span><span class="n">funckw</span><span class="p">),</span> <span class="nb">globals</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_fpaths</span> <span class="o">=</span> <span class="n">test_pydarknet2</span><span class="p">(</span><span class="o">**</span><span class="n">funckw</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">quit_if_noshow</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">wbia.plottool</span> <span class="k">as</span> <span class="nn">pt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">MultiImageInteraction</span><span class="p">(</span><span class="n">output_fpaths</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ut</span><span class="o">.</span><span class="n">show_if_requested</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-pydarknet.ctypes_interface">
+<span id="pydarknet-ctypes-interface-module"></span><h2>pydarknet.ctypes_interface module<a class="headerlink" href="#module-pydarknet.ctypes_interface" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet.ctypes_interface.find_lib_fpath">
+<span class="sig-prename descclassname"><span class="pre">pydarknet.ctypes_interface.</span></span><span class="sig-name descname"><span class="pre">find_lib_fpath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recurse_down</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/ctypes_interface.html#find_lib_fpath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet.ctypes_interface.find_lib_fpath" title="Permalink to this definition"></a></dt>
+<dd><p>Search for the library</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet.ctypes_interface.get_lib_dpath_list">
+<span class="sig-prename descclassname"><span class="pre">pydarknet.ctypes_interface.</span></span><span class="sig-name descname"><span class="pre">get_lib_dpath_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/ctypes_interface.html#get_lib_dpath_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet.ctypes_interface.get_lib_dpath_list" title="Permalink to this definition"></a></dt>
+<dd><p>returns possible lib locations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>root_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – deepest directory to look for a library (dll, so, dylib)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>plausible directories to look for libraries</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet.ctypes_interface.get_lib_fname_list">
+<span class="sig-prename descclassname"><span class="pre">pydarknet.ctypes_interface.</span></span><span class="sig-name descname"><span class="pre">get_lib_fname_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/ctypes_interface.html#get_lib_fname_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet.ctypes_interface.get_lib_fname_list" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>libname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – library name (e.g. ‘hesaff’, not ‘libhesaff’)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of plausible library file names</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet.ctypes_interface.load_clib">
+<span class="sig-prename descclassname"><span class="pre">pydarknet.ctypes_interface.</span></span><span class="sig-name descname"><span class="pre">load_clib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/ctypes_interface.html#load_clib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet.ctypes_interface.load_clib" title="Permalink to this definition"></a></dt>
+<dd><p>Does the work.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>libname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – library name (e.g. ‘hesaff’, not ‘libhesaff’)</p></li>
+<li><p><strong>root_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the deepest directory searched for the library file
+(dll, dylib, or so).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>clib a ctypes object used to interface with the library</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ctypes.cdll</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pydarknet.pydarknet_helpers">
+<span id="pydarknet-pydarknet-helpers-module"></span><h2>pydarknet.pydarknet_helpers module<a class="headerlink" href="#module-pydarknet.pydarknet_helpers" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pydarknet.pydarknet_helpers.ensure_bytes_strings">
+<span class="sig-prename descclassname"><span class="pre">pydarknet.pydarknet_helpers.</span></span><span class="sig-name descname"><span class="pre">ensure_bytes_strings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pydarknet/pydarknet_helpers.html#ensure_bytes_strings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pydarknet.pydarknet_helpers.ensure_bytes_strings" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pydarknet">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pydarknet" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to pydarknet’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Wild Me.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

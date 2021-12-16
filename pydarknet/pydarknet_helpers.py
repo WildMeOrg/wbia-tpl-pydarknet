@@ -87,7 +87,10 @@ def _find_c_shared_library_by_device(device='cpu'):
             logging.info('CPU fallback for: %s' % (libname,))
             darknet_clib, def_cfunc = _find_c_shared_library_by_device()
         else:
-            raise RuntimeError('Could not load library')
+            import warnings
+
+            warnings.warn('Unable to load C library for darknet')
+            darknet_clib, def_cfunc = None, None
 
     return darknet_clib, def_cfunc
 
@@ -96,6 +99,9 @@ def _load_c_shared_library(METHODS, device='cpu'):
     """Loads the pydarknet dynamic library and defines its functions"""
 
     darknet_clib, def_cfunc = _find_c_shared_library_by_device(device=device)
+
+    if None in [darknet_clib, def_cfunc]:
+        return None, None
 
     # Load and expose methods from lib
     for method in METHODS.keys():
